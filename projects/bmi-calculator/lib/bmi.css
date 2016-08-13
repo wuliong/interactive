@@ -1,0 +1,32 @@
+div#bmi-calculator {
+	display:flex;
+	align-items: center;
+	width: 900px;
+	margin: 0 auto;
+	flex-direction: row;
+}
+
+div#bmi-input {
+	width: 650px;
+}
+
+div#bmi-result {
+	width: 250px;
+	display: flex;
+	justify-content: center;
+	font-size: 50px;
+	font-weight: bold;
+}
+
+input {
+	font-size: 30px;
+	border: none;
+	background: none;
+	border-bottom:2px solid #808080;
+	width: 2em;
+}
+
+input:focus {
+	outline: none;
+	background-color: rgba(216,216,216,0.5);
+}

@@ -3,11 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Title | Interactive Data Visualization by Linghong Hu</title>
+    <title>BMI Index Calculator | Interactive Data Visualization by Linghong Hu</title>
+<!--
     <link rel="stylesheet" href="/interactive/stylesheets/styles.css">
     <link rel="stylesheet" href="/interactive/stylesheets/github-dark.css">
     <script src="/interactive/javascripts/scale.fix.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+-->
+    <link rel="stylesheet" href="../../stylesheets/styles.css">
+    <link rel="stylesheet" href="../../stylesheets/github-dark.css">
+    <script src="../../javascripts/scale.fix.js"></script>
+	 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	 <link rel="stylesheet" href="lib/bmi.css">
+    <script src="lib/bmi.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -16,7 +23,7 @@
   <body>
     <div class="wrapper">
       <header class="without-description">
-        <h1>Title</h1>
+        <h1>BMI Index Calculator</h1>
         <p>description</p>
         <ul>
           <li><a href="/interactive/">Back to <strong>Home</strong></a></li>
@@ -25,12 +32,36 @@
       <section>
 <!-- project code begin -->
 
-<form>
+<div id="bmi-calculator">
+	<div id="bmi-input">
+
+
+		<form>
 	<label>Height</label>
-	<input name="ht-ft">ft <input name="ht-in">in, or <input name="ht-cm">cm<br>
+	<input id="ht-ft" name="ht-ft"><span class="unit">ft</span>
+	<input id="ht-in" name="ht-in"><span class="unit">in</span>
+	<span>, or </span>
+	<input id="ht-cm" name="ht-cm"><span class="unit">cm</span><br>
 	<label>Weight</label>
-	<input name="wt-lb">lb, or <input name="wt-kg">kg
+	<input id="wt-lb" name="wt-lb"><span class="unit">lb</span>
+	<span>, or </span>
+	<input id="wt-kg" name="wt-kg"><span class="unit">kg</span>
 </form>
+
+
+
+	</div>
+
+
+
+	<div id="bmi-result">
+		<span id="bmi-index"></span>
+	</div>
+
+</div>
+
+
+
 
 
 <!-- project code end -->
