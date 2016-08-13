@@ -37,15 +37,15 @@
 
 
 		<form>
-	<label>Height</label>
-	<input id="ht-ft" name="ht-ft"><span class="unit">ft</span>
-	<input id="ht-in" name="ht-in"><span class="unit">in</span>
+	<label>Height</label><br>
+	<input id="ht-ft" name="ht-ft" type="number" min="0" max="8"><span class="unit">ft</span>
+	<input id="ht-in" name="ht-in" type="number" min="0" max="12"><span class="unit">in</span>
 	<span>, or </span>
-	<input id="ht-cm" name="ht-cm"><span class="unit">cm</span><br>
-	<label>Weight</label>
-	<input id="wt-lb" name="wt-lb"><span class="unit">lb</span>
+	<input id="ht-cm" name="ht-cm" type="number" min="0" max="250"><span class="unit">cm</span><br>
+	<label>Weight</label><br>
+	<input id="wt-lb" name="wt-lb" type="number" min="0" max="500"><span class="unit">lb</span>
 	<span>, or </span>
-	<input id="wt-kg" name="wt-kg"><span class="unit">kg</span>
+	<input id="wt-kg" name="wt-kg" type="number" min="0" max="250"><span class="unit">kg</span>
 </form>
 
 
@@ -55,7 +55,7 @@
 
 
 	<div id="bmi-result">
-		<span id="bmi-index"></span>
+		<span id="bmi-index" class="empty">--.--</span>
 	</div>
 
 </div>

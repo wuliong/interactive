@@ -2,6 +2,7 @@ div#bmi-calculator {
 	display:flex;
 	align-items: center;
 	width: 900px;
+	padding: 20px 0;
 	margin: 0 auto;
 	flex-direction: row;
 }
@@ -18,15 +19,45 @@ div#bmi-result {
 	font-weight: bold;
 }
 
+#bmi-index.empty {
+	opacity:.5;
+}
+
+
 input {
 	font-size: 30px;
 	border: none;
 	background: none;
 	border-bottom:2px solid #808080;
-	width: 2em;
+	width: 3em;
+	text-align:center;
 }
 
 input:focus {
 	outline: none;
 	background-color: rgba(216,216,216,0.5);
 }
+
+
+
+/* hide spinner */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
