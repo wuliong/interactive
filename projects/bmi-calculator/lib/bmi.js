@@ -1,5 +1,5 @@
 $(function(){
-	$("input").keyup(function(){
+	$("input").change(function(){
 
 		var ht = getHeight(), wt = getWeight();
 
