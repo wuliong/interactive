@@ -142,8 +142,15 @@ queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
 
 
 
-	var select_menu = zoom_control.append("select").on("change",change).attr("id","map-zoom");
-	var reset_btn = zoom_control.append("button").attr("id","map-reset").text("reset").on("click",reset);
+	var select_menu = zoom_control.append("select")
+					.on("change",change)
+					.attr("id","map-zoom");
+	var reset_btn = zoom_control.append("input")
+					.attr("type","button")
+					.attr("value","Reset")
+					.attr("id","map-reset")
+					.on("click",reset);
+
 
 	select_menu.selectAll('option').data(select_options).enter().append('option')
 		.attr('value',function(d){return d.id;})
