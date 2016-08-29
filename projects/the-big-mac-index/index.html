@@ -8,10 +8,59 @@
     <link rel="stylesheet" href="/interactive/stylesheets/github-dark.css">
     <script src="/interactive/javascripts/scale.fix.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script src="//d3js.org/queue.v1.min.js"></script>
+    <script src="//d3js.org/topojson.v1.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <style>
+
+	    path {
+		    cursor: pointer;
+	    }
+
+		 #map {
+			 width: 700px;
+			 height: 600px;
+			 border: 1px solid black;
+			 position: relative;
+		 }
+
+	    .background {
+		    fill: #fff;
+	    }
+
+	    .overlay {
+		    fill: none;
+		    pointer-events: all;
+	    }
+
+	    .zoom-control {
+		    position: absolute;
+		    top: 20px;
+		    width: 100%;
+	    }
+
+	    .zoom-control select {
+		    float: right;
+		    margin-right:20px;
+		    font-size: 16px;
+	    }
+
+	    .zoom-control #map-reset {
+		    float: right;
+		    margin-right: 5px;
+		    font-size: 16px;
+		    visibility: hidden;
+
+	    }
+	    .zoom-control #map-reset.show {
+		    visibility: visible;
+	    }
+
+
+	    </style>
   </head>
   <body>
     <div class="wrapper">
@@ -24,6 +73,118 @@
       </header>
       <section>
 <!-- project code begin -->
+
+<div id="map"></div>
+
+<script>
+
+queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
+	if(error) throw error;
+
+	var h = 600, w = 700;
+	var svg = d3.select("#map").append('svg').attr('height',h).attr('width',w);
+	var background = svg.append('rect').attr('class','background').attr('width',w).attr('height',h);
+	var map = svg.append('g').attr('class','boundary');
+// 	var overlay = svg.append('rect').attr('class','overlay').attr('width',w).attr('height',h);
+
+	var projection = d3.geo.mercator().scale(1).translate([0,0]),
+		path = d3.geo.path().projection(projection);
+
+	var world = data.features;
+	var 	b = path.bounds(data),
+        	s = 0.95/ Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h),
+         t = [(w - s * (b[1][0] + b[0][0])) / 2, (h - s * (b[1][1] + b[0][1])) / 2];
+   projection.scale(s).translate(t);
+
+
+	map.selectAll("path").data(world).enter()
+		.append("path").style("fill","#ccc")
+		.style("stroke","white").style("stroke-width","1px")
+		.attr("d",path).attr("id",function(d){return d.id})
+		.on("click",function(){
+			map.selectAll("path").style("opacity","0.2");
+			d3.select(this).style("opacity","1");
+			d3.event.stopPropagation();
+		});
+
+	svg.on("click",function(){map.selectAll("path").style("opacity","1");});
+
+
+
+/*
+	var zoomed = function(){
+		map.attr("transform","translate("+d3.event.translate+")scale("+d3.event.scale+")");
+	};
+	var zoom = d3.behavior.zoom().scaleExtent([1,8]).on("zoom",zoomed).size([w,h]);
+	overlay.call(zoom);
+*/
+
+
+
+	var select_options = [
+		{id:'default',label:'Zoom to', translate:[0,0], scale:1},
+		{id:'south_america',label:'South America', translate:[-378.69969677099107,-1090.8106376067017], scale:3.2852428030083205},
+		{id:'north_america',label:'North America', translate:[-132.781811661507,-623.3084937552954], scale:3.120981920694856},
+		{id:'middle_east',label:'Middle East', translate:[-1751.0253330802907,-1366.4537256724093], scale:5.007185834616135},
+		{id:'south_asia',label:'South Asia', translate:[-1938.6882698410327,-1221.2308636212701], scale:4.112455306624389},
+		{id:'north_asia',label:'North Asia', translate:[-1567.2358467457566,-688.0245064882505], scale:3.448574180070483},
+		{id:'europe',label:'Europe', translate:[-1399.6897749005989,-906.8566680188269], scale:4.575723892815415},
+	];
+
+
+
+
+	var zoom_control = d3.select("#map").append("div").attr("class","zoom-control");
+
+
+
+	var select_menu = zoom_control.append("select").on("change",change).attr("id","map-zoom");
+	var reset_btn = zoom_control.append("button").attr("id","map-reset").text("reset").on("click",reset);
+
+	select_menu.selectAll('option').data(select_options).enter().append('option')
+		.attr('value',function(d){return d.id;})
+		.text(function(d){return d.label;});
+
+
+	function change() {
+		var v = this.value;
+		var x = select_options.filter(function(d){return d.id == v ;});
+		x=x[0];
+		map.attr("transform","translate("+x.translate+")scale("+x.scale+")");
+		map.selectAll("path").style("stroke-width","0.2px");
+		if(v == 'default') {
+			zoom_control.select("#map-reset").classed("show",false);
+		} else {
+			zoom_control.select("#map-reset").classed("show",true);
+		}
+	}
+
+	function reset() {
+		map.attr("transform",null);
+		zoom_control.select("#map-reset").classed("show",false);
+		var options = document.getElementsByTagName("option");
+		for (var i=0;i<options.length;i++) {
+			if(options[i].value=='default') {
+				options[i].selected = true;
+			} else {
+				options[i].selected = false;
+			}
+		}
+	}
+
+
+
+
+
+
+});
+
+
+
+
+</script>
+
+
 
 <!-- project code end -->
       </section>
