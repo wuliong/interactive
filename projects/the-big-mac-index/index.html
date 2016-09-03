@@ -24,12 +24,58 @@
 			 height: 600px;
 			 border: 1px solid black;
 			 position: relative;
+			 display: inline-block;
 		 }
 
 		 #slider {
 			 width: 100%;
 			 height: 100px;
 		 }
+
+		 #info-box {
+			 box-sizing: border-box;
+			 float: right;
+			 width: 258px;
+			 padding:10px 10px 10px 20px;
+		 }
+
+		 #info-box h2 {
+			 float: left;
+			 color: #FF0000;
+			 font-size: 12px;
+			 font-weight: bold;
+			 height: 15px;
+			 padding: 3px 0 0 7px;
+			 margin: 0 0 4px 0;
+			 width: 60%;
+		 }
+
+		 #info-box h3 {
+			 float: left;
+			 color #000000;
+			 font-size: 12px;
+			 font-weight: normal;
+			 height: 15px;
+			 padding:3px 0 0 0;
+			 margin: 0 0 4px 0;
+			 text-align: right;
+			 width: 35%;
+		 }
+
+		 #info-box .info-body {
+			 float: left;
+		    height: 85px;
+		    width: 95%;
+		    font-size: 12px;
+		    padding: 5px 7px 2px 7px;
+		    border-top: 1px solid #FF0000;
+		    display: none;
+		 }
+
+		 #info-box .info-body.show {
+			 display: inline-block;
+		 }
+
 
 	    .background {
 		    fill: #fff;
@@ -115,7 +161,13 @@
       <section>
 <!-- project code begin -->
 <div id="slider"></div>
+<div id="info-box">
+	<h2></h2>
+	<h3></h3>
+	<div class="info-body"></div>
+</div>
 <div id="map"></div>
+
 
 <script>
 queue().defer(d3.json,'lib/countries.geo.json').defer(d3.csv,'lib/BM2000to2016.csv').awaitAll(function(error,data){
@@ -205,14 +257,14 @@ queue().defer(d3.json,'lib/countries.geo.json').defer(d3.csv,'lib/BM2000to2016.c
 	map.selectAll("path").data(world).enter()
 		.append("path").style("fill","#ccc")
 		.style("stroke","white").style("stroke-width","1px")
-		.attr("d",path).attr("id",function(d){return d.id})
-		.on("click",function(){
-			map.selectAll("path").style("opacity","0.2");
-			d3.select(this).style("opacity","1");
-			d3.event.stopPropagation();
-		});
+		.attr("d",path).attr("id",function(d){return d.id});
 
-	svg.on("click",function(){map.selectAll("path").style("opacity","1");});
+	svg.on("click",function(){
+		map.selectAll("path").style("opacity","1")
+									.classed("show",false);
+		svg.classed("onecountry",false);
+		hideInfo();
+	});
 /*
 	var zoomed = function(){
 		map.attr("transform","translate("+d3.event.translate+")scale("+d3.event.scale+")");
@@ -297,6 +349,7 @@ queue().defer(d3.json,'lib/countries.geo.json').defer(d3.csv,'lib/BM2000to2016.c
 	]);
 
 
+	var infoBox = d3.select("#info-box");
 
 	function drawMap(year) {
 		if(year == currYear) return;
@@ -310,21 +363,54 @@ queue().defer(d3.json,'lib/countries.geo.json').defer(d3.csv,'lib/BM2000to2016.c
 			if(x.length>0) {
 				var c = colors(x[0].dollar_valuation);
 				this.style.fill = c;
+				d3.select(this).on("click",function(){
+					svg.classed("onecountry",true);
+					d3.select(this).classed("show",true);
+					showInfo(x[0]);
+					map.selectAll("path").style("opacity","0.2");
+					d3.select(this).style("opacity","1");
+					d3.event.stopPropagation();
+				}).on("mouseover",function(){
+					if(!svg.classed("onecountry")) {
+						showInfo(x[0]);
+					}
+				}).on("mouseout",function(){
+					if(!svg.classed("onecountry")) {
+						hideInfo();
+					}
+				});
 			} else {
 				this.style.fill = "#f0f0f4";
 				this.style.stroke = "#f0f0f4";
+				d3.select(this).on("click",null)
+									.on("mouseover",null)
+									.on("mouseout",null);
 			}
-
-
-
 		});
 
 
 
 
-
-
 	} // end of function drawMap()
+
+	function showInfo(data){
+		infoBox.select("h2").text(data.country);
+		infoBox.select("h3").text(data.year);
+		infoBox.select(".info-body").classed("show",true);
+		var infoBody = "Price: $"+data.dollar_price+"<br>"+"Raw index: ";
+		if(data.dollar_valuation<0){
+			infoBody += "undervalued by "+Math.abs(data.dollar_valuation)+"%<br>";
+		} else {
+			infoBody += "overvalued by "+data.dollar_valuation+"%<br>";
+		}
+		infoBox.select(".info-body").html(infoBody);
+	}
+	function hideInfo() {
+		infoBox.select("h2").text("");
+		infoBox.select("h3").text("");
+		infoBox.select(".info-body").html("").classed("show",false);
+	}
+
 
 	drawMap("Apr 2000");
 
