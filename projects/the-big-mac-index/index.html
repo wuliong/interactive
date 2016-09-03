@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <title>The Big Mac Index | Interactive Data Visualization by Linghong Hu</title>
     <link rel="stylesheet" href="/interactive/stylesheets/styles.css">
     <link rel="stylesheet" href="/interactive/stylesheets/github-dark.css">
@@ -10,12 +11,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
     <script src="//d3js.org/queue.v1.min.js"></script>
     <script src="//d3js.org/topojson.v1.min.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <style>
-
 	    path {
 		    cursor: pointer;
 	    }
@@ -68,48 +67,39 @@
 
 
 
-/* styles for slider */
-.ticks {
-  font: 10px sans-serif;
-}
-.track,
-.track-inset,
-.track-overlay {
-  stroke-linecap: round;
-}
-.track {
-  stroke: #000;
-  stroke-opacity: 0.3;
-  stroke-width: 10px;
-}
-.track-inset {
-  stroke: #ddd;
-  stroke-width: 8px;
-}
-.track-overlay {
-  pointer-events: stroke;
-  stroke-width: 50px;
-  cursor: pointer;
-}
-.handle {
-  fill: #fff;
-  stroke: #000;
-  stroke-opacity: 0.5;
-  stroke-width: 1.25px;
-}
-.handleTxt {
-	font: 15px sans-serif;
-}
-
-
-
-
-
-
-
-
-
-
+		/* styles for slider */
+		.ticks {
+		  font: 9px sans-serif;
+		  opacity: .6;
+		}
+		.track,
+		.track-inset,
+		.track-overlay {
+		  stroke-linecap: round;
+		}
+		.track {
+		  stroke: #000;
+		  stroke-opacity: 0.3;
+		  stroke-width: 10px;
+		}
+		.track-inset {
+		  stroke: #ddd;
+		  stroke-width: 8px;
+		}
+		.track-overlay {
+		  pointer-events: stroke;
+		  stroke-width: 50px;
+		  cursor: pointer;
+		}
+		.handle {
+		  fill: #fff;
+		  stroke: #000;
+		  stroke-opacity: 0.5;
+		  stroke-width: 1.25px;
+		}
+		.handleTxt {
+			font: 15px sans-serif;
+		}
 
 	    </style>
   </head>
@@ -124,20 +114,15 @@
       </header>
       <section>
 <!-- project code begin -->
-
-
 <div id="slider"></div>
 <div id="map"></div>
 
-
-
-
-
 <script>
-queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
+queue().defer(d3.json,'lib/countries.geo.json').defer(d3.csv,'lib/BM2000to2016.csv').awaitAll(function(error,data){
 	if(error) throw error;
 
-
+	bmfiles=data[1];//big mac index data
+	data=data[0];//geo shape data
 
 	function initSlider() {
 		var svg = d3.select("#slider").append("svg").attr("width","960").attr("height","100");
@@ -169,7 +154,7 @@ queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
 			handle.attr("cx",cx);
 			handleTxt.attr("transform","translate("+cx+",-18)");
 			handleTxt.text(closest);
-			refreshMap(closest);
+			drawMap(closest);
 		});
 
 		slider.append("line").attr("class","track").attr("x1",xmin).attr("x2",xmax)
@@ -195,22 +180,9 @@ queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
 		var handleTxt = handleContainer.append("text").attr("class","handleTxt")
 					.attr("transform","translate(0,"+(-18)+")")
 					.attr("text-anchor","middle").text(bmdates[0]);
-
-
-
 	}//end of function initSlider()
 
-
-
 	initSlider();
-
-
-
-
-
-
-
-
 
 
 
@@ -230,7 +202,6 @@ queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
          t = [(w - s * (b[1][0] + b[0][0])) / 2, (h - s * (b[1][1] + b[0][1])) / 2];
    projection.scale(s).translate(t);
 
-
 	map.selectAll("path").data(world).enter()
 		.append("path").style("fill","#ccc")
 		.style("stroke","white").style("stroke-width","1px")
@@ -242,13 +213,6 @@ queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
 		});
 
 	svg.on("click",function(){map.selectAll("path").style("opacity","1");});
-
-
-
-
-
-
-
 /*
 	var zoomed = function(){
 		map.attr("transform","translate("+d3.event.translate+")scale("+d3.event.scale+")");
@@ -256,9 +220,6 @@ queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
 	var zoom = d3.behavior.zoom().scaleExtent([1,8]).on("zoom",zoomed).size([w,h]);
 	overlay.call(zoom);
 */
-
-
-
 	var select_options = [
 		{id:'default',label:'Zoom to', translate:[0,0], scale:1},
 		{id:'south_america',label:'South America', translate:[-378.69969677099107,-1090.8106376067017], scale:3.2852428030083205},
@@ -268,14 +229,7 @@ queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
 		{id:'north_asia',label:'North Asia', translate:[-1567.2358467457566,-688.0245064882505], scale:3.448574180070483},
 		{id:'europe',label:'Europe', translate:[-1399.6897749005989,-906.8566680188269], scale:4.575723892815415},
 	];
-
-
-
-
 	var zoom_control = d3.select("#map").append("div").attr("class","zoom-control");
-
-
-
 	var select_menu = zoom_control.append("select")
 					.on("change",change)
 					.attr("id","map-zoom");
@@ -284,11 +238,30 @@ queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
 					.attr("value","Reset")
 					.attr("id","map-reset")
 					.on("click",reset);
-
-
 	select_menu.selectAll('option').data(select_options).enter().append('option')
 		.attr('value',function(d){return d.id;})
 		.text(function(d){return d.label;});
+
+
+
+	/* bind BM data to individual path */
+	var euArea = ['AUT','BEL','EST','FIN','FRA','DEU','GRC','IRL','ITA',
+						'LVA','LTU','LUX','MLT','NLD','PRT','SVK','SVN','ESP'];
+	var euBM = bmfiles.filter(function(d){return d.country_id=="EUR";}); // BM data for Euro area
+	var neuBM = bmfiles.filter(function(d){return d.country_id!="EUR";});// BM data for individual countries
+		/* initialize a property 'bm' for each path which will store the bm data for this particular country */
+	map.selectAll("path").each(function(d){d.bm=[];});
+	var euCountries = map.selectAll("path").filter(function(d){return euArea.indexOf(d.id) != -1; });
+	euCountries.each(function(d){
+		d.bm = d.bm.concat(euBM);
+	});
+	neuBM.forEach(function(data){
+		var id = data.country_id;
+		map.select("#"+id).each(function(d){
+			d.bm.push(data);
+		});
+	});
+
 
 
 	function change() {
@@ -318,12 +291,43 @@ queue().defer(d3.json,'lib/countries.geo.json').await(function(error,data){
 	}
 
 
+	var currYear = "";
+	var colors = d3.scale.threshold().domain([-50,-25,-10,10,25,50]).range([
+		"#e63f2e","#e38c76","#ffb39c","#E6DA96","#BACFD8","#649AA7","#16526D"
+	]);
 
 
 
-	function refreshMap(year) {
-// 		console.log(year);
-	}
+	function drawMap(year) {
+		if(year == currYear) return;
+		currYear = year;
+		//draw map for YEAR=year
+		map.selectAll("path").each(function(d){
+			var x = d.bm.filter(function(z){return z.year == year;});
+			if(x.length>1) {
+				x = x.filter(function(xx){return xx.country_id==d.id;});
+			}
+			if(x.length>0) {
+				var c = colors(x[0].dollar_valuation);
+				this.style.fill = c;
+			} else {
+				this.style.fill = "#f0f0f4";
+				this.style.stroke = "#f0f0f4";
+			}
+
+
+
+		});
+
+
+
+
+
+
+	} // end of function drawMap()
+
+	drawMap("Apr 2000");
+
 
 
 
