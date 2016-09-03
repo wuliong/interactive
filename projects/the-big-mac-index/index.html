@@ -27,6 +27,21 @@
 			 display: inline-block;
 		 }
 
+		 #key-box {
+			 width: 700px;
+			 font-size: 12px;
+		 }
+		 #key-box span.key {
+			 width: 15px;
+			 height: 15px;
+			 display: inline-block;
+			 position: relative;
+			 top: 2px;
+			 margin-right: 1px;
+			 margin-left: 5px;
+		 }
+
+
 		 #slider {
 			 width: 100%;
 			 height: 100px;
@@ -167,7 +182,15 @@
 	<div class="info-body"></div>
 </div>
 <div id="map"></div>
-
+<div id="key-box">
+	Undervalued by: <span class="key" style="background-color:#E63F2E"></span> >50% <span class="sep"></span>
+						<span class="key" style="background-color:#E38C76"></span> 25-50% <span class="sep"></span>
+						<span class="key" style="background-color:#FFB39C"></span> 10-25% <br>
+	<span class="key" style="background-color:#E6DA96"></span> -/+ 10% <br>
+	Overvalued by: <span class="key" style="background-color:#BACFD8"></span> 10-50% <span class="sep"></span>
+		<span class="key" style="background-color:#649AA7"></span> 50-100% <span class="sep"></span>
+		<span class="key" style="background-color:#16526D"></span> >100%
+</div>
 
 <script>
 queue().defer(d3.json,'lib/countries.geo.json').defer(d3.csv,'lib/BM2000to2016.csv').awaitAll(function(error,data){
@@ -344,7 +367,7 @@ queue().defer(d3.json,'lib/countries.geo.json').defer(d3.csv,'lib/BM2000to2016.c
 
 
 	var currYear = "";
-	var colors = d3.scale.threshold().domain([-50,-25,-10,10,25,50]).range([
+	var colors = d3.scale.threshold().domain([-50,-25,-10,10,50,100]).range([
 		"#e63f2e","#e38c76","#ffb39c","#E6DA96","#BACFD8","#649AA7","#16526D"
 	]);
 
