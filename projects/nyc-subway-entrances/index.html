@@ -38,13 +38,13 @@
 		    box-sizing: border-box;
 		    width: 240px;
 		    margin-left: 20px;
-		    margin-bottom: 20px;
 		    float: right;
 		    clear:right;
 	    }
 
 	    #info-box {
-		 	height: 240px;
+		 	height: 250px;
+		 	margin-bottom: 20px;
 	    }
 	    #control-panel {
 
@@ -60,14 +60,91 @@
 	    .stations circle {
 		    fill: #ff2121;
 		    stroke: #493131;
-		    stroke-width: 1px;
+		    stroke-width: 1.5px;
 	    }
-	    .stations svg.marker.show {
-		    visibility: visible;
-	    }
-	    .stations svg.marker.hide {
-		    visibility: hidden;
-	    }
+
+
+	    .stations svg.marker.show {visibility: visible;}
+	    .stations svg.marker.hide {visibility: hidden;}
+
+
+
+		 #info-box {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;}
+		 #info-box h2 {margin-bottom:10px;font-size:36px;}
+		 #info-box h3 {margin-bottom:8px;font-size:16px;}
+
+		 #info-box .lineCircle {
+			 display:inline-block;
+			 line-height:0px;
+			 border-radius:50%;
+			 //border:2px solid;
+			 font-size:18px;
+			 margin-right: 2px;
+			 font-weight: 700;
+			 background-color:#808183;
+		 }
+
+
+		 #info-box .lineCircle span {
+			 display:inline-block;
+			 padding-top:50%;
+			 padding-bottom:50%;
+			 margin-left:6px;
+			 margin-right:6px;
+		 }
+
+
+		 #info-box .lineCircle.line1,
+		 #info-box .lineCircle.line2,
+		 #info-box .lineCircle.line3 {
+			 background-color: #ee352e;
+			 color: white;
+		 }
+
+		 #info-box .lineCircle.line4,
+		 #info-box .lineCircle.line5,
+		 #info-box .lineCircle.line6 {
+			 background-color: #00933c;
+			 color: white;
+		 }
+
+		 #info-box .lineCircle.line7 {
+			 background-color: #b933ad;
+			 color: white;
+		 }
+
+		 #info-box .lineCircle.lineA,
+		 #info-box .lineCircle.lineC,
+		 #info-box .lineCircle.lineE {
+			 background-color: #2850ad;
+			 color: white;
+		 }
+
+		 #info-box .lineCircle.lineB,
+		 #info-box .lineCircle.lineD,
+		 #info-box .lineCircle.lineF,
+		 #info-box .lineCircle.lineM {
+			 background-color: #ff6319;
+			 color: white;
+		 }
+
+		 #info-box .lineCircle.lineG {
+			 background-color: #6cbe45;
+			 color: white;
+		 }
+
+		 #info-box .lineCircle.lineJ,
+		 #info-box .lineCircle.lineZ {
+			 background-color: #996633;
+			 color: white;
+		 }
+
+		 #info-box .lineCircle.lineN,
+		 #info-box .lineCircle.lineQ,
+		 #info-box .lineCircle.lineR {
+			 background-color: #fccc0a;
+			 color: black;
+		 }
 
 
 
@@ -87,7 +164,12 @@
       <section>
 <!-- project code begin -->
 
-<div id="info-box"></div>
+<div id="info-box">
+	<h2></h2>
+	<h3></h3>
+	<p></p>
+	<div id="info-body"></div>
+</div>
 <div id="map"></div>
 <div id="control-panel"></div>
 
@@ -100,6 +182,7 @@ function initGmap() {
 		center: {lat: 40.73268524762266, lng: -73.91792016601562},
 		zoom: 11,
 		mapTypeId: 'roadmap',
+		clickableIcons: false,
 		mapTypeControl: false,
 		streetViewControl: false,
 		rotateControl: false,
@@ -109,8 +192,25 @@ function initGmap() {
 		},
 	});
 
-	map.addListener('zoom_changed', function(){});
+
+
+	var bbox = {
+		lat: {
+			top:41.02238670159649,
+			bottom:40.365376532506545,
+		},
+		lng: {
+			left:-74.39307885742187,
+			right:-73.5210390625,
+		},
+	};
+
+	map.addListener('zoom_changed', function(){
+		if(this.getZoom()<10) {this.setZoom(10);}
+	});
 	map.addListener('center_changed',function(){});
+
+
 
 	d3.csv('lib/StationEntrances_clean.csv', function(error,data){
 		if(error) throw error;
@@ -128,7 +228,7 @@ function initGmap() {
 				var marker = layer.selectAll("svg").data(data).each(transform)
 								.enter().append("svg").attr("class","marker").each(transform);
 				marker.append("circle").attr("r",4).attr("cx",padding).attr("cy",padding)
-								.on("click",function(d){console.log(d);});
+								.on("click",showStationInfo);
 
 				function transform(d,i) {
 					var c = new google.maps.LatLng(d.Latitude,d.Longitude);
@@ -145,16 +245,22 @@ function initGmap() {
 											.classed("show",v).classed("hide",!v);
 
 				}
-			}; //end: overlay.draw
-		}; // end: overlay.onAdd
+			}; //end overlay.draw
+		}; // end overlay.onAdd
 		overlay.setMap(map);
-	}); // end: d3.csv()
-} // end: initGmap()
+	}); // end d3.csv()
 
+	var infoBox = d3.select("#info-box");
 
+	function showStationInfo(d) {
+		infoBox.select("h2").text(d.Station_Name);
+		if(d.Corner) {infoBox.select("h3").text(d.Corner+" Corner");}
+		var routes = "";
+		for(var l in d.Routes) {routes += "<span class='lineCircle line"+d.Routes[l]+"'><span>"+d.Routes[l]+"</span></span>";}
+		infoBox.select("p").html(routes);
+	}
 
-
-
+} // end initGmap()
 </script>
 
 
