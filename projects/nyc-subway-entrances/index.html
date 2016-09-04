@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Subway Entrances | Interactive Data Visualization by Linghong Hu</title>
+    <link rel="stylesheet" href="/interactive/stylesheets/styles.css">
+    <link rel="stylesheet" href="/interactive/stylesheets/github-dark.css">
+    <script src="/interactive/javascripts/scale.fix.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script src="//d3js.org/queue.v1.min.js"></script>
+    <script src="//d3js.org/topojson.v1.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style>
+	    body {
+		    color: #333333;
+		    font-family: Verdana, Arial, sans-serif;
+	    }
+
+	    section:after {
+		    content:' ';
+		    display: block;
+		    clear: both;
+	    }
+
+	    #map {
+		    width: 700px;
+		    height: 800px;
+		    float: left;
+		    box-sizing: border-box;
+		    position: relative;
+	    }
+	    #info-box,
+	    #control-panel {
+		    box-sizing: border-box;
+		    width: 240px;
+		    margin-left: 20px;
+		    margin-bottom: 20px;
+		    float: right;
+		    clear:right;
+	    }
+
+	    #info-box {
+		 	height: 240px;
+	    }
+	    #control-panel {
+
+	    }
+	    .stations, .stations svg {
+		    position: absolute;
+	    }
+	    .stations svg {
+		    width: 20px;
+		    height: 20px;
+		    cursor: pointer;
+	    }
+	    .stations circle {
+		    fill: #ff2121;
+		    stroke: #493131;
+		    stroke-width: 1px;
+	    }
+	    .stations svg.marker.show {
+		    visibility: visible;
+	    }
+	    .stations svg.marker.hide {
+		    visibility: hidden;
+	    }
+
+
+
+
+
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="without-description">
+        <h1>Subway Entrances</h1>
+        <p>Map of New York City Subway Entrances</p>
+        <ul>
+          <li><a href="/interactive/">Back to <strong>Home</strong></a></li>
+        </ul>
+      </header>
+      <section>
+<!-- project code begin -->
+
+<div id="info-box"></div>
+<div id="map"></div>
+<div id="control-panel"></div>
+
+
+<script>
+
+
+function initGmap() {
+	var map = new google.maps.Map(d3.select("#map").node(), {
+		center: {lat: 40.73268524762266, lng: -73.91792016601562},
+		zoom: 11,
+		mapTypeId: 'roadmap',
+		mapTypeControl: false,
+		streetViewControl: false,
+		rotateControl: false,
+		zoomControlOptions: {
+			position: google.maps.ControlPosition.RIGHT_TOP,
+			style: google.maps.ZoomControlStyle.LARGE
+		},
+	});
+
+	map.addListener('zoom_changed', function(){});
+	map.addListener('center_changed',function(){});
+
+	d3.csv('lib/StationEntrances_clean.csv', function(error,data){
+		if(error) throw error;
+		data.forEach(function(e){
+			e.Routes = e.Routes.split(",");
+		});
+
+		var overlay = new google.maps.OverlayView();
+
+		overlay.onAdd = function() {
+			var layer = d3.select(this.getPanes().overlayMouseTarget)
+								.append("div").attr("class","stations");
+			overlay.draw = function() {
+				var projection = this.getProjection(), padding=10;
+				var marker = layer.selectAll("svg").data(data).each(transform)
+								.enter().append("svg").attr("class","marker").each(transform);
+				marker.append("circle").attr("r",4).attr("cx",padding).attr("cy",padding)
+								.on("click",function(d){console.log(d);});
+
+				function transform(d,i) {
+					var c = new google.maps.LatLng(d.Latitude,d.Longitude);
+					c = projection.fromLatLngToDivPixel(c);
+					var v = "show"; // visibility for this station
+					var z = map.getZoom();
+
+					if(z>=14) {v="show";}
+					else if (z>=12) {v=(d.disp_level==1)?"show":"hide";}
+					else {v=(d.disp_level==1&&i%2==0)?"show":"hide";}
+					v = (v=="show");
+
+					return d3.select(this).style("left", (c.x-padding)+"px").style("top",(c.y-padding)+"px")
+											.classed("show",v).classed("hide",!v);
+
+				}
+			}; //end: overlay.draw
+		}; // end: overlay.onAdd
+		overlay.setMap(map);
+	}); // end: d3.csv()
+} // end: initGmap()
+
+
+
+
+
+</script>
+
+
+
+<script src="https://maps.googleapis.com/maps/api/js?v=3.26&key=AIzaSyA8lmLHO5vkdjlx7SSnfmsIuvOnsEyhMGY&callback=initGmap"
+    async defer></script>
+<!-- project code end -->
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/wuliong">Linghong Hu</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+  </body>
+</html>
