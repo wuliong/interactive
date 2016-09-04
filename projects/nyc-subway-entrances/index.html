@@ -7,6 +7,7 @@
     <title>Subway Entrances | Interactive Data Visualization by Linghong Hu</title>
     <link rel="stylesheet" href="/interactive/stylesheets/styles.css">
     <link rel="stylesheet" href="/interactive/stylesheets/github-dark.css">
+    <link href="https://fonts.googleapis.com/css?family=Dancing+Script" rel="stylesheet">
     <script src="/interactive/javascripts/scale.fix.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
     <script src="//d3js.org/queue.v1.min.js"></script>
@@ -63,10 +64,9 @@
 		    stroke-width: 1.5px;
 	    }
 
-
 	    .stations svg.marker.show {visibility: visible;}
 	    .stations svg.marker.hide {visibility: hidden;}
-
+		 .stations svg.marker.hide-some {visibility: hidden;}
 
 
 		 #info-box {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;}
@@ -77,11 +77,9 @@
 			 display:inline-block;
 			 line-height:0px;
 			 border-radius:50%;
-			 //border:2px solid;
-			 font-size:18px;
+			 font-size:22px;
 			 margin-right: 2px;
 			 font-weight: 700;
-			 background-color:#808183;
 		 }
 
 
@@ -89,62 +87,130 @@
 			 display:inline-block;
 			 padding-top:50%;
 			 padding-bottom:50%;
-			 margin-left:6px;
-			 margin-right:6px;
+			 margin-left:8px;
+			 margin-right:8px;
 		 }
 
 
-		 #info-box .lineCircle.line1,
-		 #info-box .lineCircle.line2,
-		 #info-box .lineCircle.line3 {
+		 .lineCircle.line1,
+		 .lineCircle.line2,
+		 .lineCircle.line3 {
 			 background-color: #ee352e;
 			 color: white;
 		 }
 
-		 #info-box .lineCircle.line4,
-		 #info-box .lineCircle.line5,
-		 #info-box .lineCircle.line6 {
+		 .lineCircle.line4,
+		 .lineCircle.line5,
+		 .lineCircle.line6 {
 			 background-color: #00933c;
 			 color: white;
 		 }
 
-		 #info-box .lineCircle.line7 {
+		 .lineCircle.line7 {
 			 background-color: #b933ad;
 			 color: white;
 		 }
 
-		 #info-box .lineCircle.lineA,
-		 #info-box .lineCircle.lineC,
-		 #info-box .lineCircle.lineE {
+		 .lineCircle.lineA,
+		 .lineCircle.lineC,
+		 .lineCircle.lineE {
 			 background-color: #2850ad;
 			 color: white;
 		 }
 
-		 #info-box .lineCircle.lineB,
-		 #info-box .lineCircle.lineD,
-		 #info-box .lineCircle.lineF,
-		 #info-box .lineCircle.lineM {
+		 .lineCircle.lineB,
+		 .lineCircle.lineD,
+		 .lineCircle.lineF,
+		 .lineCircle.lineM {
 			 background-color: #ff6319;
 			 color: white;
 		 }
 
-		 #info-box .lineCircle.lineG {
+		 .lineCircle.lineG {
 			 background-color: #6cbe45;
 			 color: white;
 		 }
 
-		 #info-box .lineCircle.lineJ,
-		 #info-box .lineCircle.lineZ {
+		 .lineCircle.lineJ,
+		 .lineCircle.lineZ {
 			 background-color: #996633;
 			 color: white;
 		 }
 
-		 #info-box .lineCircle.lineN,
-		 #info-box .lineCircle.lineQ,
-		 #info-box .lineCircle.lineR {
+		 .lineCircle.lineN,
+		 .lineCircle.lineQ,
+		 .lineCircle.lineR {
 			 background-color: #fccc0a;
 			 color: black;
 		 }
+
+		 .lineCircle.lineL {
+			 background-color: #a7a9ac;
+			 color: white;
+		 }
+		 .lineCircle.lineS {
+			 background-color: #808183;
+			 color: white;
+		 }
+
+
+/*
+		 #control-panel h2 {
+			 font-size: 32px;
+			 text-align: center;
+			 font-family: 'Dancing Script', cursive;
+		 }
+
+		 #control-icons input[type=checkbox] {
+			 position:absolute;
+			 left:-1000px;
+		 }
+
+		 #control-icons label {
+			 margin:0 2px 2px 0;
+			 width: 38px;
+			 display:inline-block;
+			 text-align: center;
+			 box-sizing: border-box;
+			 font-size:16px;
+			 padding:7px 2px;
+			 opacity:.1;
+		 }
+
+		 #control-icons input[type=checkbox]:checked + label {
+			 opacity: 1;
+		 }
+
+		 #control-global input[type=radio] {
+			 position: absolute;
+			 left: -1000px;
+		 }
+		 #control-global {
+			 margin-top:20px;
+			 display:flex;
+			 justify-content: center;
+		}
+		 #control-global label {
+			 margin: 0 5px 2px 0;
+			 display: inline-block;
+			 text-align: center;
+			 font-size:13px;
+			 padding: 5px 8px;
+			 background-color:white;
+		 }
+		 #control-global input[type=radio]:checked + label {
+			 background-color:red;
+		 }
+*/
+
+
+
+
+
+
+
+
+
 
 
 
@@ -171,13 +237,27 @@
 	<div id="info-body"></div>
 </div>
 <div id="map"></div>
-<div id="control-panel"></div>
+<!--
+<div id="control-panel">
+	<h2>Filter by lines</h2>
+	<div id="control-icons"></div>
+	<div id="control-global">
+		<input type="radio" name="selectType" id="select-all" value="select-all">
+		<label for="select-all">Select All</label>
+		<input type="radio" name="selectType" id="unselect-all" value="unselect-all">
+		<label for="unselect-all">Unselect All</label>
+	</div>
+</div>
+-->
 
 
 <script>
 
 
+
 function initGmap() {
+	var subwayLines = ["1","2","3","4","5","6","7","A","C","E","B","D","F","M","G","N","Q","R","J","Z","L","S"];
+
 	var map = new google.maps.Map(d3.select("#map").node(), {
 		center: {lat: 40.73268524762266, lng: -73.91792016601562},
 		zoom: 11,
@@ -192,23 +272,26 @@ function initGmap() {
 		},
 	});
 
-
-
-	var bbox = {
-		lat: {
-			top:41.02238670159649,
-			bottom:40.365376532506545,
-		},
-		lng: {
-			left:-74.39307885742187,
-			right:-73.5210390625,
-		},
-	};
-
 	map.addListener('zoom_changed', function(){
 		if(this.getZoom()<10) {this.setZoom(10);}
 	});
-	map.addListener('center_changed',function(){});
+
+
+
+/*
+	var controlPanel = d3.select("#control-icons");
+	var panelHtml = "";
+	for(var line in subwayLines) {
+		panelHtml += "<input type='checkbox' id='control-line"+subwayLines[line]+
+					"'><label for='control-line"+subwayLines[line]+
+					"' class='lineCircle line"+subwayLines[line]+
+					"'>"+subwayLines[line]+"</label>";
+	}
+	controlPanel.html(panelHtml);
+*/
+
+
+
 
 
 
@@ -216,6 +299,9 @@ function initGmap() {
 		if(error) throw error;
 		data.forEach(function(e){
 			e.Routes = e.Routes.split(",");
+			e.Routes.forEach(function(route){
+				route=route.trim().toUpperCase();
+			});
 		});
 
 		var overlay = new google.maps.OverlayView();
@@ -236,13 +322,12 @@ function initGmap() {
 					var v = "show"; // visibility for this station
 					var z = map.getZoom();
 
-					if(z>=14) {v="show";}
-					else if (z>=12) {v=(d.disp_level==1)?"show":"hide";}
-					else {v=(d.disp_level==1&&i%2==0)?"show":"hide";}
-					v = (v=="show");
+					if(z==12||z==13) {v=(d.disp_level==1)?"show":"hide";}
+					if(z<12) {v=(d.disp_level==1)?((i%2==0)?"show":"hide-some"):"hide";}
 
 					return d3.select(this).style("left", (c.x-padding)+"px").style("top",(c.y-padding)+"px")
-											.classed("show",v).classed("hide",!v);
+											.classed({"show":false,"hide":false,"hide-some":false})
+											.classed(v,true);
 
 				}
 			}; //end overlay.draw
@@ -259,6 +344,13 @@ function initGmap() {
 		for(var l in d.Routes) {routes += "<span class='lineCircle line"+d.Routes[l]+"'><span>"+d.Routes[l]+"</span></span>";}
 		infoBox.select("p").html(routes);
 	}
+
+
+
+
+
+
+
 
 } // end initGmap()
 </script>
