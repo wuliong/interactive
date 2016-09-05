@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>What Would It Take To Flip States In The 2016 Election? | Interactive Data Visualization by Linghong Hu</title>
+    <link rel="stylesheet" href="/interactive/stylesheets/styles.css">
+    <link rel="stylesheet" href="/interactive/stylesheets/github-dark.css">
+    <script src="/interactive/javascripts/scale.fix.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script src="//d3js.org/queue.v1.min.js"></script>
+    <script src="//d3js.org/topojson.v1.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style>
+	    .state rect {
+		    fill:rgba(178,178,178,.4);
+		    stroke:#fff;
+		    stroke-width:1px;
+	    }
+
+	    #map text {
+		    font-size:13px;
+		    fill: #fff;
+			 font-weight: 400;
+	    }
+
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="without-description">
+        <h1>Simulate the outcome of 2016 Election</h1>
+        <p>What Would It Take To Flip States In The 2016 Election?</p>
+        <ul>
+          <li><a href="/interactive/">Back to <strong>Home</strong></a></li>
+        </ul>
+      </header>
+      <section>
+<!-- project code begin -->
+<p>Change the settings below to see how shifts in party preference and turnout by different demographic groups would affect the 2016 presidential election.</p>
+
+
+
+
+<div id="electoral-votes"></div>
+<div id="map"></div>
+<div id="control-panel"></div>
+
+
+
+
+
+<script>
+
+var tilemap = {
+	"ME":[0,11],"AK":[1,0],"WI":[1,6],"VT":[1,10],"NH":[1,11],"WA":[2,1],"ID":[2,2],
+	"MT":[2,3],"ND":[2,4],"MN":[2,5],"IL":[2,6],"MI":[2,7],"NY":[2,9],"MA":[2,10],
+	"OR":[3,1],"NV":[3,2],"WY":[3,3],"SD":[3,4],"IA":[3,5],"IN":[3,6],"OH":[3,7],
+	"PA":[3,8],"NJ":[3,9],"CT":[3,10],"RI":[3,11],"CA":[4,1],"UT":[4,2],"CO":[4,3],
+	"NE":[4,4],"MO":[4,5],"KY":[4,6],"WV":[4,7],"VA":[4,8],"DC":[4,9],"MD":[4,10],
+	"DE":[4,11],"AZ":[5,2],"NM":[5,3],"KS":[5,4],"AR":[5,5],"TN":[5,6],"NC":[5,7],
+	"SC":[5,8],"OK":[6,3],"LA":[6,4],"MS":[6,5],"AL":[6,6],"GA":[6,7],"HI":[7,0],
+	"TX":[7,3],"FL":[7,8]
+}, tilemapRows = 8, tilemapCols = 12;
+
+
+/* measurements for the entire map */
+var m = {
+	w:960,h:280,
+	tw:32,th:32,
+	row:8,col:12,
+	sep:0,
+	margin:{
+		top:10,
+		bottom:10,
+		left:45,
+		right:50,
+	},
+	disp:0,
+};
+
+
+/* calculate a few measurements */
+(function(){
+	if(m.margin.top+m.margin.bottom+m.row*m.th > m.h) {
+		console.log('please specify a larger number for Height');
+	}
+	if(m.margin.left+m.margin.right+m.col*m.tw > m.w) {
+		console.log('please specify a larger number for width');
+	}
+	m.sep = m.w-m.margin.left-m.margin.right-2*m.col*m.tw;
+	m.disp = m.col*m.tw+m.sep;
+})();
+
+
+
+var map = d3.select("#map").append("svg").attr("width",m.w).attr("height",m.h);
+
+
+/* draw the background map */
+(function () {
+	var enterSelection = map.append("g").attr("class","bg").selectAll("g").data(d3.entries(tilemap)).enter();
+	var leftSide = enterSelection.append("g").attr("class","state").attr("transform",function(d){
+				var top = d.value[0]*m.th+m.margin.top, left = d.value[1]*m.tw+m.margin.left;
+				return "translate("+left+","+top+")";
+	});
+	leftSide.append("rect").attr("width",m.tw).attr("height",m.th).attr("x",0).attr("y",0);
+	leftSide.append("text").attr("x",m.tw/2).attr("y",m.th/2).attr("alignment-baseline","middle")
+									.attr("text-anchor","middle").text(function(d){return d.key;});
+	var rightSide = enterSelection.insert("g").attr("class","state").attr("transform",function(d){
+					var top = d.value[0]*m.th+m.margin.top, left = d.value[1]*m.tw+m.margin.left+m.disp;
+					return "translate("+left+","+top+")";
+	});
+	rightSide.append("rect").attr("width",m.tw).attr("height",m.th);
+	rightSide.append("text").attr("x",m.tw/2).attr("y",m.th/2).attr("alignment-baseline","middle")
+			.attr("text-anchor","middle").text(function(d){return d.key;});
+})();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+
+
+
+<!-- project code end -->
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/wuliong">Linghong Hu</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+  </body>
+</html>
