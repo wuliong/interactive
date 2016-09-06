@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <title>What Would It Take To Flip States In The 2016 Election? | Interactive Data Visualization by Linghong Hu</title>
+    <title>Simulation of 2016 Election Result | Interactive Data Visualization by Linghong Hu</title>
     <link rel="stylesheet" href="/interactive/stylesheets/styles.css">
     <link rel="stylesheet" href="/interactive/stylesheets/github-dark.css">
     <script src="/interactive/javascripts/scale.fix.js"></script>
@@ -15,24 +15,24 @@
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <style>
-	    .state rect {
-		    fill:rgba(178,178,178,.4);
-		    stroke:#fff;
-		    stroke-width:1px;
-	    }
+	    .state rect {fill:rgba(178,178,178,.25); stroke:#fbfaf5; stroke-width:1px;}
+	    .state text {font-size:12px; fill:#fbfaf5; font-weight:400;}
+	    .fg .state text {fill:black; font-weight:bold;}
+	    .fg .state rect {fill: #ffb3a7;}
 
-	    #map text {
-		    font-size:13px;
-		    fill: #fff;
-			 font-weight: 400;
-	    }
+
+
+
+
+
+
 
     </style>
   </head>
   <body>
     <div class="wrapper">
       <header class="without-description">
-        <h1>Simulate the outcome of 2016 Election</h1>
+        <h1>Simulation of 2016 Election Result</h1>
         <p>What Would It Take To Flip States In The 2016 Election?</p>
         <ul>
           <li><a href="/interactive/">Back to <strong>Home</strong></a></li>
@@ -64,8 +64,7 @@ var tilemap = {
 	"DE":[4,11],"AZ":[5,2],"NM":[5,3],"KS":[5,4],"AR":[5,5],"TN":[5,6],"NC":[5,7],
 	"SC":[5,8],"OK":[6,3],"LA":[6,4],"MS":[6,5],"AL":[6,6],"GA":[6,7],"HI":[7,0],
 	"TX":[7,3],"FL":[7,8]
-}, tilemapRows = 8, tilemapCols = 12;
-
+};
 
 /* measurements for the entire map */
 var m = {
@@ -82,7 +81,6 @@ var m = {
 	disp:0,
 };
 
-
 /* calculate a few measurements */
 (function(){
 	if(m.margin.top+m.margin.bottom+m.row*m.th > m.h) {
@@ -94,8 +92,6 @@ var m = {
 	m.sep = m.w-m.margin.left-m.margin.right-2*m.col*m.tw;
 	m.disp = m.col*m.tw+m.sep;
 })();
-
-
 
 var map = d3.select("#map").append("svg").attr("width",m.w).attr("height",m.h);
 
@@ -117,18 +113,21 @@ var map = d3.select("#map").append("svg").attr("width",m.w).attr("height",m.h);
 	rightSide.append("rect").attr("width",m.tw).attr("height",m.th);
 	rightSide.append("text").attr("x",m.tw/2).attr("y",m.th/2).attr("alignment-baseline","middle")
 			.attr("text-anchor","middle").text(function(d){return d.key;});
+
+	var fg = map.append("g").attr("class","fg").selectAll("g").data(d3.entries(tilemap)).enter()
+				.append("g").attr("class","state").attr("transform",function(d,i){
+					var top = d.value[0]*m.th+m.margin.top, left = d.value[1]*m.tw+m.margin.left;
+					return "translate("+left+","+top+")";
+				}).append("g").attr("class","flipper").each(function(d){
+					d.state=d.key;d.row = d.value[0];d.col = d.value[1];
+					delete d.key;delete d.value;
+					var top=d.row*m.th+m.margin.top, left=d.col*m.tw+m.margin.left;
+					d.trans = {"dem":[left,top],"rep":[left+m.disp,top]};
+				});
+	fg.append("rect").attr("width",m.tw).attr("height",m.th).attr("x",0).attr("y",0);
+	fg.append("text").attr("x",m.tw/2).attr("y",m.th/2).attr("alignment-baseline","middle")
+				.attr("text-anchor","middle").text(function(d){return d.state;});
 })();
-
-
-
-
-
-
-
-
-
-
-
 
 
 
