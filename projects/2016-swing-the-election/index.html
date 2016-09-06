@@ -402,6 +402,8 @@ var initialization = 0;
 				tilemap[i].init.party = "rep";
 				tilemap[i].init.votes = rep;
 			}
+			tilemap[i].sim.party = tilemap[i].init.party;
+			tilemap[i].sim.votes = tilemap[i].init.votes;
 	 	}
 
 		d3.selectAll(".fg .state").attr("transform",function(d){
@@ -514,8 +516,51 @@ var initialization = 0;
 
 
 	function drawMap(option) {
-	/* if option is true, show animation */
-	if(initialization==0) return;
+		/* if option is true, show animation */
+		if(initialization==0) return;
+		var state,group,dem,rep;
+
+		for (var i in tilemap) {
+			state = tilemap[i];
+			dem=0;rep=0;
+			for (var j in groups) {
+				group = groups[j];
+				rep += state.demo[group.cat] * group.sim.turnout * group.sim.votes;
+				dem += state.demo[group.cat] * group.sim.turnout * (1-group.sim.votes);
+			}
+			state.sim.votes = Math.round(rep/(rep+dem)*1000)/1000;
+		}
+
+
+		var states = d3.selectAll(".fg .state").filter(function(d){
+			return (d.sim.party=="dem"&&d.sim.votes>=0.5)||(d.sim.party=="rep"&&d.sim.votes<0.5);
+		});
+
+
+		var flippers = states.select(".flipper");
+		var rects = flippers.select("rect");
+
+
+		rects.style("fill",function(d){
+			return getColor(d.sim.votes);
+		});
+
+
+
+		states.transition().attr("transform",function(d){
+			var tran;
+			if(d.sim.votes>=0.5) {tran = d.tran["rep"];}
+			else {tran = d.tran["dem"];}
+			return "translate("+tran[0]+","+tran[1]+")";
+		}).each("end",function(d){
+			if(d.sim.votes>=0.5) {d.sim.party="rep";}
+			else {d.sim.party="dem";}
+		});
+
+
+
+
+
 
 
 
