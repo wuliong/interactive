@@ -7,7 +7,7 @@
     <title>Simulation of 2016 Election Result | Interactive Data Visualization by Linghong Hu</title>
     <link rel="stylesheet" href="/interactive/stylesheets/styles.css">
     <link rel="stylesheet" href="/interactive/stylesheets/github-dark.css">
-    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Oxygen+Mono|Lato" rel="stylesheet">
     <script src="/interactive/javascripts/scale.fix.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
     <script src="//d3js.org/queue.v1.min.js"></script>
@@ -22,8 +22,8 @@
 	    .fg .state rect {fill: #ffb3a7;}
 
 
-
 		 #control-panel {
+			 display: block;
 			 margin-top:50px;
 		 }
 		 #control-panel .controls {
@@ -86,6 +86,32 @@
 		 }
 
 
+		 #reset-control {
+			 font-family: 'Oxygen Mono', monospace;
+			 float: right;
+			 margin-right:50px;
+			 text-transform: uppercase;
+			 border-radius: 2px;
+			 width: 50px;
+			 height: 20px;
+			 display: inline-block;
+			 cursor: pointer;
+			 background: #666;
+			 color: #fff;
+			 font-size:12px;
+			 font-weight: normal;
+			 text-align: center;
+		    -webkit-user-select: none;
+		    -moz-user-select: none;
+		    -ms-user-select: none;
+		    -webkit-tap-highlight-color: transparent;
+		 }
+
+		 #reset-control:hover {
+			  background: #ffe100;
+		 }
+
+
     </style>
   </head>
   <body>
@@ -106,8 +132,9 @@
 
 <div id="electoral-votes"></div>
 <div id="map"></div>
+<div id="reset-control">reset</div>
 <div id="control-panel"></div>
-<input id="reset-control" type="button" value="reset">
+
 
 
 
