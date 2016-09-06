@@ -40,24 +40,50 @@
 			 text-align: center;
 			 font-size: 13px;
 			 font-weight: 500;
+			 margin-bottom: 10px;
+			 color:#003371;
 		 }
 
-		 .chart .party {
-			 fill-opacity: .2;
-		 }
-		 .chart .party.D {
-			 fill:#008fd5;
-		 }
-		 .chart .party.R {
-			 fill:#ff2700;
+		 .chart {
+			 cursor: crosshair;
 		 }
 
+		 .chart .party {fill-opacity: .15;}
+		 .chart .party.D {fill:#008fd5;}
+		 .chart .party.R {fill:#ff2700;}
 
+		 .axis path {
+			 fill:none;
+			 stroke:#000;
+			 shape-rendering:crispEdges;
+			 opacity:.1;
+		 }
 
-
-
-
-
+		 .tick text {
+			 font-size:8px;
+			 font-weight:normal;
+			 stroke:#808080;
+			 opacity:.4;
+			 font-family:monospace;
+		 }
+		 .axis path, .axis line {fill:none; stroke:black;}
+		 .tick line {opacity: 0.1;}
+		 .guide line {
+		 	stroke-width: 2;
+		 	stroke: #3c3c3c;
+		 }
+		 .guide text {
+			 font-size:12px;
+			 font-weight:700px;
+			 font-family: monospace;
+		 }
+		 .guide .init-point {
+			 fill: #3c3c3c;
+			 fill-opacity: .25;
+		 }
+		 .guide .hover-point {
+			 fill: #3c3c3c;
+		 }
 
 
     </style>
@@ -81,7 +107,7 @@
 <div id="electoral-votes"></div>
 <div id="map"></div>
 <div id="control-panel"></div>
-
+<input id="reset-control" type="button" value="reset">
 
 
 
@@ -171,6 +197,8 @@ var groups = [
 	{cat:"A/O",cat_label:"Asian/Other",turnout:.49,votes:.33}
 ];
 
+var xScale,yScale;
+
 
 (function(){
 	var width=180,height=180,
@@ -181,7 +209,6 @@ var groups = [
 			right:33,
 		};
 	var cw = width-margins.left-margins.right, ch = height-margins.top-margins.bottom; // width,height for the chart
-
 	var cats = d3.select("#control-panel").selectAll("div").data(groups).enter().append("div")
 		.attr("data-category",function(d){return d.cat;})
 		.attr("class",function(d){return "controls "+d.cat;});
@@ -193,15 +220,219 @@ var groups = [
 	chart.append("rect").attr("class","party D").attr("width",cw/2).attr("height",ch).attr("x",0).attr("y",0);
 	chart.append("rect").attr("class","party R").attr("width",cw/2).attr("height",ch).attr("x",cw/2).attr("y",0);
 
+	xScale = d3.scale.linear().domain([0,1]).range([0,cw]);
+	yScale = d3.scale.linear().domain([0,1]).range([ch,0]);
 
+	var xAxis = d3.svg.axis().scale(xScale)
+	.tickValues([0,.25,.5,.75,1]).tickFormat(function(d){
+		if(d==0) {return "100%";}
+		else if(d==1) {return "100%";}
+		else {return "";}
+	}).orient("bottom");
 
-	chart.each(function(d,i){
-		console.log(d);
+	var yAxis = d3.svg.axis().scale(yScale).orient("left")
+	.tickValues([0,.25,.5,.75,1]).tickFormat(function(d){
+		if(d==0) {return "0%";}
+		else if(d==1) {return "100%";}
+		else {return "";}
 	});
+
+	xAxis.innerTickSize(-ch).outerTickSize(0).tickPadding(8);
+	yAxis.innerTickSize(-cw).outerTickSize(0).tickPadding(4);
+	chart.append("g").attr("class","x axis").attr("transform","translate(0,"+ch+")").call(xAxis);
+	chart.append("g").attr("class","y axis").attr("transform","translate(0,0)").call(yAxis);
+
+	var guide = chart.append("g").attr("class","guide");
+	guide.each(function(d){
+		d.init = {};
+		d.init.x = xScale(d.votes);
+		d.init.y = yScale(d.turnout);
+	});
+
+	guide.append("line")
+		.attr("class","line vline")
+		.attr("x1",function(d){return d.init.x.toFixed(2);})
+		.attr("y1",0)
+		.attr("x2",function(d){return d.init.x.toFixed(2);})
+		.attr("y2",function(d){return d.init.y.toFixed(2);});
+
+	guide.append("line")
+		.attr("class","line hline")
+		.attr("x1",function(d){return d.init.x.toFixed(2);})
+		.attr("y1",function(d){return d.init.y.toFixed(2);})
+		.attr("x2",cw)
+		.attr("y2",function(d){return d.init.y.toFixed(2);});
+
+	guide.append("text")
+		.attr("class","label top")
+		.attr("text-anchor","middle")
+		.attr("x",function(d){return d.init.x.toFixed(2);})
+		.attr("y",-5)
+		.text(function(d){
+		if(d.votes>=.5){
+			return Math.round(d.votes*100)+"%R";
+		} else {
+			return Math.round(100*(1-d.votes))+"%D";
+		}
+	});
+
+	guide.append("text")
+		.attr("class","label right")
+		.attr("text-anchor","start")
+		.attr("x",cw+5)
+		.attr("y",function(d){
+		return d.init.y.toFixed(2);
+	}).text(function(d){
+		return Math.round(d.turnout*100)+"%";
+	});
+
+	guide.append("circle")
+		.attr("class","init-point")
+		.attr("cx",function(d){return d.init.x;})
+		.attr("cy",function(d){return d.init.y;})
+		.attr("r",5);
+
+	guide.append("circle")
+		.attr("class","hover-point")
+		.attr("cx",function(d){return d.init.x;})
+		.attr("cy",function(d){return d.init.y;})
+		.attr("r",8);
+})();
+
+
+
+/* function that convert republican vote share into hex color code */
+var getColor = (function(){
+	var blue = "#177cb0", grey = "#f0f0f4", red = "#ed5736";
+	var interpolator1 = d3.interpolate(d3.rgb(blue),d3.rgb(grey)),
+		interpolator2 = d3.interpolate(d3.rgb(grey),d3.rgb(red));
+	var z = function(d){
+		var x;
+		if(d<0.5) {x=2*d; return interpolator1(x);}
+		else {x=2*(d-0.5); return interpolator2(x);}
+	};
+	return z;
+})();
+
+
+
+/* start simulation */
+(function(){
+	/* initialize simulation data */
+	groups.forEach(function(d){
+		d.init.x = Math.round(d.init.x*1000)/1000;
+		d.init.y = Math.round(d.init.y*1000)/1000;
+		d.sim = {turnout:d.turnout,votes:d.votes,x:d.init.x,y:d.init.y};
+	});
+
+	var chart = d3.selectAll(".chart");
+	var drag = d3.behavior.drag().on("drag",dragmove);
+	chart.call(drag);
+
+
+	drawMap();
+
+	function dragmove(d) {
+		var cat = d.cat;
+		var guide = d3.select(this).select(".guide");
+		var x = d3.event.x, y = d3.event.y;
+		if(x > xScale.range()[1]) {x=xScale.range()[1];}
+		if(x < xScale.range()[0]) {x=xScale.range()[0];}
+		if(y > yScale.range()[0]) {y=yScale.range()[0];}
+		if(y < yScale.range()[1]) {y=yScale.range()[1];}
+
+		var turnout = Math.round(yScale.invert(y)*100),
+			votes = Math.round(xScale.invert(x)*100);
+
+		var group = groups.filter(function(e){return e.cat == cat; })[0];
+		group.sim.turnout = turnout/100;
+		group.sim.votes = votes/100;
+		group.sim.x = x;
+		group.sim.y = y;
+
+		turnout += "%";
+		if(votes>=50) {votes += "%R";}
+		else {votes = (100-votes)+"%D";}
+
+		var vline = guide.select(".vline"),
+			hline = guide.select(".hline"),
+			point = guide.select(".hover-point")
+			toplabel = guide.select(".label.top"),
+			rightlabel = guide.select(".label.right");
+		vline.attr("x1",x).attr("x2",x).attr("y2",y);
+		hline.attr("x1",x).attr("y1",y).attr("y2",y);
+		point.attr("cx",x).attr("cy",y);
+		toplabel.attr("x",x).text(votes);
+		rightlabel.attr("y",y).text(turnout);
+		drawMap(true);
+	}
+
+
+	function resetControl() {
+		d3.selectAll(".guide").each(function(d){
+			var cat = d.cat;
+
+			var turnout = d.turnout, votes = d.votes;
+			var x = d.init.x, y = d.init.y;
+			var guide = d3.select(this);
+			var vline = guide.select(".vline"),
+				hline = guide.select(".hline"),
+				point = guide.select(".hover-point"),
+				toplabel = guide.select(".label.top"),
+				rightlabel = guide.select(".label.right");
+
+			turnout = Math.round(turnout*100);
+			votes = Math.round(votes*100);
+
+			var group = groups.filter(function(e){return e.cat == cat; })[0];
+			group.sim.turnout = turnout/100;
+			group.sim.votes = votes/100;
+			group.sim.x = x;
+			group.sim.y = y;
+
+			turnout +="%";
+			if(votes>=50) {votes +="%R";}
+			else {votes = (100-votes)+"%D";}
+
+			vline.transition().ease("sin").attr("x1",x).attr("x2",x).attr("y2",y);
+			hline.transition().ease("sin").attr("x1",x).attr("y1",y).attr("y2",y);
+			point.transition().ease("sin").attr("cx",x).attr("cy",y);
+			toplabel.transition().ease("sin").attr("x",x).text(votes);
+			rightlabel.transition().ease("sin").attr("y",y).text(turnout);
+		});
+	}
+
+	d3.select("#reset-control").on("click",resetControl);
+
+
+
+
+	function drawMap(option) {
+	/* if option is true, show animation */
+
+
+
+	}
+
+
+
+
+
 
 
 
 })();
+
+
+
+
+
+
+
+
+
+
+
 
 
 
