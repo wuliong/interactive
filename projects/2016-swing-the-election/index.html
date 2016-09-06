@@ -19,7 +19,7 @@
 	    .state rect {fill:rgba(178,178,178,.25); stroke:#fbfaf5; stroke-width:1px;}
 	    .state text {font-size:12px; fill:#fbfaf5; font-weight:400;}
 	    .fg .state text {fill:black; font-weight:bold;}
-	    .fg .state rect {fill: #ffb3a7;}
+	    //.fg .state rect {fill: #ffb3a7;}
 
 
 		 #control-panel {
@@ -473,6 +473,10 @@ var initialization = 0;
 
 
 	function resetControl() {
+
+
+
+
 		d3.selectAll(".guide").each(function(d){
 			var turnout = d.init.turnout,
 				votes = d.init.votes,
@@ -504,8 +508,24 @@ var initialization = 0;
 			rightlabel.transition().ease("sin").attr("y",y).text(turnout);
 		});
 
-		drawMap(true);
-	}
+
+		d3.selectAll(".fg .state").attr("transform",function(d){
+			var tran = d.tran[d.init.party];
+			return "translate("+tran[0]+","+tran[1]+")";
+		}).select("rect").style("fill",function(d){
+			return getColor(d.init.votes);
+		});
+
+	};
+
+
+
+
+
+
+
+
+
 
 	d3.select("#reset-control").on("click",resetControl);
 
