@@ -140,7 +140,6 @@
 
 
 <script>
-
 var tilemap = {
 	"ME":[0,11],"AK":[1,0],"WI":[1,6],"VT":[1,10],"NH":[1,11],"WA":[2,1],"ID":[2,2],
 	"MT":[2,3],"ND":[2,4],"MN":[2,5],"IL":[2,6],"MI":[2,7],"NY":[2,9],"MA":[2,10],
@@ -152,19 +151,16 @@ var tilemap = {
 	"TX":[7,3],"FL":[7,8]
 };
 
+
 /* measurements for the entire map */
 var m = {
-	w:960,h:280,
-	tw:32,th:32,
-	row:8,col:12,
-	sep:0,
+	w:960,h:280,tw:32,th:32,row:8,col:12,sep:0,disp:0,
 	margin:{
 		top:10,
 		bottom:10,
 		left:45,
 		right:50,
 	},
-	disp:0,
 };
 
 /* calculate a few measurements */
@@ -179,37 +175,60 @@ var m = {
 	m.disp = m.col*m.tw+m.sep;
 })();
 
+
+
+
 var map = d3.select("#map").append("svg").attr("width",m.w).attr("height",m.h);
+
+
+
+(function(){
+	tilemap = d3.entries(tilemap);
+	tilemap.forEach(function(d){
+		d.state = d.key;
+		d.mat = {};
+		d.mat.row = d.value[0];
+		d.mat.col = d.value[1];
+		delete d.key;
+		delete d.value;
+		d.tran = {};
+		var top = d.mat.row*m.th+m.margin.top;
+		var left = d.mat.col*m.tw+m.margin.left;
+		d.tran.dem = [left,top];
+		d.tran.rep = [left+m.disp,top];
+		d.init = {party:"",votes:0};
+		d.sim = {party:"",votes:0};
+		d.demo = {};
+	});
+})();
+
+
+
 
 
 /* draw the background map */
 (function () {
-	var enterSelection = map.append("g").attr("class","bg").selectAll("g").data(d3.entries(tilemap)).enter();
+	var enterSelection = map.append("g").attr("class","bg").selectAll("g").data(tilemap).enter();
 	var leftSide = enterSelection.append("g").attr("class","state").attr("transform",function(d){
-				var top = d.value[0]*m.th+m.margin.top, left = d.value[1]*m.tw+m.margin.left;
-				return "translate("+left+","+top+")";
+			var z = d.tran.dem;
+			return "translate("+z[0]+","+z[1]+")";
 	});
 	leftSide.append("rect").attr("width",m.tw).attr("height",m.th).attr("x",0).attr("y",0);
 	leftSide.append("text").attr("x",m.tw/2).attr("y",m.th/2).attr("alignment-baseline","middle")
-									.attr("text-anchor","middle").text(function(d){return d.key;});
+									.attr("text-anchor","middle").text(function(d){return d.state;});
 	var rightSide = enterSelection.insert("g").attr("class","state").attr("transform",function(d){
-					var top = d.value[0]*m.th+m.margin.top, left = d.value[1]*m.tw+m.margin.left+m.disp;
-					return "translate("+left+","+top+")";
+			var z = d.tran.rep;
+			return "translate("+z[0]+","+z[1]+")";
 	});
 	rightSide.append("rect").attr("width",m.tw).attr("height",m.th);
 	rightSide.append("text").attr("x",m.tw/2).attr("y",m.th/2).attr("alignment-baseline","middle")
-			.attr("text-anchor","middle").text(function(d){return d.key;});
+			.attr("text-anchor","middle").text(function(d){return d.state;});
 
-	var fg = map.append("g").attr("class","fg").selectAll("g").data(d3.entries(tilemap)).enter()
-				.append("g").attr("class","state").attr("transform",function(d,i){
-					var top = d.value[0]*m.th+m.margin.top, left = d.value[1]*m.tw+m.margin.left;
-					return "translate("+left+","+top+")";
-				}).append("g").attr("class","flipper").each(function(d){
-					d.state=d.key;d.row = d.value[0];d.col = d.value[1];
-					delete d.key;delete d.value;
-					var top=d.row*m.th+m.margin.top, left=d.col*m.tw+m.margin.left;
-					d.trans = {"dem":[left,top],"rep":[left+m.disp,top]};
-				});
+	var fg = map.append("g").attr("class","fg").selectAll("g").data(tilemap).enter()
+				.append("g").attr("class","state").attr("transform",function(d){
+					z = d.tran.dem;
+					return "translate("+z[0]+","+z[1]+")";
+				}).append("g").attr("class","flipper");
 	fg.append("rect").attr("width",m.tw).attr("height",m.th).attr("x",0).attr("y",0);
 	fg.append("text").attr("x",m.tw/2).attr("y",m.th/2).attr("alignment-baseline","middle")
 				.attr("text-anchor","middle").text(function(d){return d.state;});
@@ -223,6 +242,8 @@ var groups = [
 	{cat:"Latino",cat_label:"Hispanic/Latino",turnout:.48,votes:.29},
 	{cat:"A/O",cat_label:"Asian/Other",turnout:.49,votes:.33}
 ];
+
+
 
 var xScale,yScale;
 
@@ -250,6 +271,22 @@ var xScale,yScale;
 	xScale = d3.scale.linear().domain([0,1]).range([0,cw]);
 	yScale = d3.scale.linear().domain([0,1]).range([ch,0]);
 
+	groups.forEach(function(d){
+		d.init = {turnout:d.turnout,votes:d.votes};
+		delete d.turnout;
+		delete d.votes;
+		d.init.x = xScale(d.init.votes);
+		d.init.y = yScale(d.init.turnout);
+		d.init.x = Math.round(d.init.x*1000)/1000;
+		d.init.y = Math.round(d.init.y*1000)/1000;
+		d.sim = {
+			turnout: d.init.turnout,
+			votes: d.init.votes,
+			x: d.init.x,
+			y: d.init.y,
+		};
+	});
+
 	var xAxis = d3.svg.axis().scale(xScale)
 	.tickValues([0,.25,.5,.75,1]).tickFormat(function(d){
 		if(d==0) {return "100%";}
@@ -270,36 +307,31 @@ var xScale,yScale;
 	chart.append("g").attr("class","y axis").attr("transform","translate(0,0)").call(yAxis);
 
 	var guide = chart.append("g").attr("class","guide");
-	guide.each(function(d){
-		d.init = {};
-		d.init.x = xScale(d.votes);
-		d.init.y = yScale(d.turnout);
-	});
 
 	guide.append("line")
 		.attr("class","line vline")
-		.attr("x1",function(d){return d.init.x.toFixed(2);})
+		.attr("x1",function(d){return d.init.x;})
 		.attr("y1",0)
-		.attr("x2",function(d){return d.init.x.toFixed(2);})
-		.attr("y2",function(d){return d.init.y.toFixed(2);});
+		.attr("x2",function(d){return d.init.x;})
+		.attr("y2",function(d){return d.init.y;});
 
 	guide.append("line")
 		.attr("class","line hline")
-		.attr("x1",function(d){return d.init.x.toFixed(2);})
-		.attr("y1",function(d){return d.init.y.toFixed(2);})
+		.attr("x1",function(d){return d.init.x;})
+		.attr("y1",function(d){return d.init.y;})
 		.attr("x2",cw)
-		.attr("y2",function(d){return d.init.y.toFixed(2);});
+		.attr("y2",function(d){return d.init.y;});
 
 	guide.append("text")
 		.attr("class","label top")
 		.attr("text-anchor","middle")
-		.attr("x",function(d){return d.init.x.toFixed(2);})
+		.attr("x",function(d){return d.init.x;})
 		.attr("y",-5)
 		.text(function(d){
-		if(d.votes>=.5){
-			return Math.round(d.votes*100)+"%R";
+		if(d.init.votes>=.5){
+			return Math.round(d.init.votes*100)+"%R";
 		} else {
-			return Math.round(100*(1-d.votes))+"%D";
+			return Math.round(100*(1-d.init.votes))+"%D";
 		}
 	});
 
@@ -307,11 +339,10 @@ var xScale,yScale;
 		.attr("class","label right")
 		.attr("text-anchor","start")
 		.attr("x",cw+5)
-		.attr("y",function(d){
-		return d.init.y.toFixed(2);
-	}).text(function(d){
-		return Math.round(d.turnout*100)+"%";
-	});
+		.attr("y",function(d){return d.init.y;})
+		.text(function(d){
+			return Math.round(d.init.turnout*100)+"%";
+		});
 
 	guide.append("circle")
 		.attr("class","init-point")
@@ -328,9 +359,11 @@ var xScale,yScale;
 
 
 
+
+
 /* function that convert republican vote share into hex color code */
 var getColor = (function(){
-	var blue = "#177cb0", grey = "#f0f0f4", red = "#ed5736";
+	var blue = "#177cb0", grey = "#f0f0f4", red = "#ff461f";
 	var interpolator1 = d3.interpolate(d3.rgb(blue),d3.rgb(grey)),
 		interpolator2 = d3.interpolate(d3.rgb(grey),d3.rgb(red));
 	var z = function(d){
@@ -342,40 +375,82 @@ var getColor = (function(){
 })();
 
 
+var initialization = 0;
+
+
+
+
+
+/* read demographic data and bind to each tile/state */
+(function(){
+	d3.csv("lib/demo.csv",function(error,data){
+		if(error) throw error;
+
+		for(var i in tilemap) {
+			d = data.filter(function(e){return e.state == tilemap[i].state;})[0];
+			tilemap[i].demo["CEW"] = d["CEW"];
+			tilemap[i].demo["NCEW"] = d["NCEW"];
+			tilemap[i].demo["Black"] = d["Black"];
+			tilemap[i].demo["Latino"] = d["Latino"];
+			tilemap[i].demo["A/O"] = d["A/O"];
+			tilemap[i].electoral_votes = d.electoral_votes;
+			var dem = d.votes_dem, rep = d.votes_rep;
+			if(dem>rep) {
+				tilemap[i].init.party = "dem";
+				tilemap[i].init.votes = rep;
+			} else {
+				tilemap[i].init.party = "rep";
+				tilemap[i].init.votes = rep;
+			}
+	 	}
+
+		d3.selectAll(".fg .state").attr("transform",function(d){
+			var party = d.init.party;
+			var transform = d.tran[party];
+			return "translate("+transform[0]+","+transform[1]+")";
+		}).selectAll(".flipper rect").style("fill",function(d){
+			return getColor(d.init.votes);
+		});
+
+		initialization = 1;
+	});
+})();
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* start simulation */
 (function(){
-	/* initialize simulation data */
-	groups.forEach(function(d){
-		d.init.x = Math.round(d.init.x*1000)/1000;
-		d.init.y = Math.round(d.init.y*1000)/1000;
-		d.sim = {turnout:d.turnout,votes:d.votes,x:d.init.x,y:d.init.y};
-	});
-
 	var chart = d3.selectAll(".chart");
 	var drag = d3.behavior.drag().on("drag",dragmove);
 	chart.call(drag);
 
 
-	drawMap();
-
 	function dragmove(d) {
-		var cat = d.cat;
-		var guide = d3.select(this).select(".guide");
+
 		var x = d3.event.x, y = d3.event.y;
 		if(x > xScale.range()[1]) {x=xScale.range()[1];}
 		if(x < xScale.range()[0]) {x=xScale.range()[0];}
 		if(y > yScale.range()[0]) {y=yScale.range()[0];}
 		if(y < yScale.range()[1]) {y=yScale.range()[1];}
 
-		var turnout = Math.round(yScale.invert(y)*100),
-			votes = Math.round(xScale.invert(x)*100);
+		var turnout = Math.round(yScale.invert(y)*100);
+		var votes = Math.round(xScale.invert(x)*100);
+		var guide = d3.select(this).select(".guide");
 
-		var group = groups.filter(function(e){return e.cat == cat; })[0];
-		group.sim.turnout = turnout/100;
-		group.sim.votes = votes/100;
-		group.sim.x = x;
-		group.sim.y = y;
+		d.sim.turnout = turnout/100;
+		d.sim.votes = votes/100;
+		d.sim.x = x;
+		d.sim.y = y;
 
 		turnout += "%";
 		if(votes>=50) {votes += "%R";}
@@ -397,10 +472,16 @@ var getColor = (function(){
 
 	function resetControl() {
 		d3.selectAll(".guide").each(function(d){
-			var cat = d.cat;
+			var turnout = d.init.turnout,
+				votes = d.init.votes,
+				x = d.init.x,
+				y = d.init.y;
 
-			var turnout = d.turnout, votes = d.votes;
-			var x = d.init.x, y = d.init.y;
+			d.sim.turnout = d.init.turnout;
+			d.sim.votes = d.init.votes;
+			d.sim.x = d.init.x;
+			d.sim.y = d.init.y;
+
 			var guide = d3.select(this);
 			var vline = guide.select(".vline"),
 				hline = guide.select(".hline"),
@@ -410,13 +491,6 @@ var getColor = (function(){
 
 			turnout = Math.round(turnout*100);
 			votes = Math.round(votes*100);
-
-			var group = groups.filter(function(e){return e.cat == cat; })[0];
-			group.sim.turnout = turnout/100;
-			group.sim.votes = votes/100;
-			group.sim.x = x;
-			group.sim.y = y;
-
 			turnout +="%";
 			if(votes>=50) {votes +="%R";}
 			else {votes = (100-votes)+"%D";}
@@ -427,6 +501,8 @@ var getColor = (function(){
 			toplabel.transition().ease("sin").attr("x",x).text(votes);
 			rightlabel.transition().ease("sin").attr("y",y).text(turnout);
 		});
+
+		drawMap(true);
 	}
 
 	d3.select("#reset-control").on("click",resetControl);
@@ -434,8 +510,13 @@ var getColor = (function(){
 
 
 
+
+
+
 	function drawMap(option) {
 	/* if option is true, show animation */
+	if(initialization==0) return;
+
 
 
 
