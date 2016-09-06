@@ -7,6 +7,7 @@
     <title>Simulation of 2016 Election Result | Interactive Data Visualization by Linghong Hu</title>
     <link rel="stylesheet" href="/interactive/stylesheets/styles.css">
     <link rel="stylesheet" href="/interactive/stylesheets/github-dark.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
     <script src="/interactive/javascripts/scale.fix.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
     <script src="//d3js.org/queue.v1.min.js"></script>
@@ -19,6 +20,38 @@
 	    .state text {font-size:12px; fill:#fbfaf5; font-weight:400;}
 	    .fg .state text {fill:black; font-weight:bold;}
 	    .fg .state rect {fill: #ffb3a7;}
+
+
+
+		 #control-panel {
+			 margin-top:50px;
+		 }
+		 #control-panel .controls {
+			 display:inline-block;
+			 width:180px;
+			 height:210px;
+			 margin-right: 15px;
+		 }
+		 #control-panel .controls:last-child {
+			 margin-right:0;
+		 }
+
+		 .cat-label {
+			 text-align: center;
+			 font-size: 13px;
+			 font-weight: 500;
+		 }
+
+		 .chart .party {
+			 fill-opacity: .2;
+		 }
+		 .chart .party.D {
+			 fill:#008fd5;
+		 }
+		 .chart .party.R {
+			 fill:#ff2700;
+		 }
+
 
 
 
@@ -130,6 +163,45 @@ var map = d3.select("#map").append("svg").attr("width",m.w).attr("height",m.h);
 })();
 
 
+var groups = [
+	{cat:"CEW",cat_label:"College-Educated White",turnout:.77,votes:.56},
+	{cat:"NCEW",cat_label:"Non-College-Educated White",turnout:.57,votes:.62},
+	{cat:"Black",cat_label:"Black",turnout:.66,votes:.07},
+	{cat:"Latino",cat_label:"Hispanic/Latino",turnout:.48,votes:.29},
+	{cat:"A/O",cat_label:"Asian/Other",turnout:.49,votes:.33}
+];
+
+
+(function(){
+	var width=180,height=180,
+		margins={
+			top:17,
+			bottom:50,
+			left:34,
+			right:33,
+		};
+	var cw = width-margins.left-margins.right, ch = height-margins.top-margins.bottom; // width,height for the chart
+
+	var cats = d3.select("#control-panel").selectAll("div").data(groups).enter().append("div")
+		.attr("data-category",function(d){return d.cat;})
+		.attr("class",function(d){return "controls "+d.cat;});
+	cats.append("div").attr("class","cat-label").text(function(d){return d.cat_label;});
+	var chart = cats.append("svg").attr("width",width).attr("height",height)
+		.append("g").attr("transform","translate("+margins.left+","+margins.top+")")
+		.append("g").attr("class","chart");
+
+	chart.append("rect").attr("class","party D").attr("width",cw/2).attr("height",ch).attr("x",0).attr("y",0);
+	chart.append("rect").attr("class","party R").attr("width",cw/2).attr("height",ch).attr("x",cw/2).attr("y",0);
+
+
+
+	chart.each(function(d,i){
+		console.log(d);
+	});
+
+
+
+})();
 
 
 
