@@ -112,6 +112,46 @@
 		 }
 
 
+		 #electoral-votes {
+			 display:block;
+			 width:960px;
+			 padding-left:60px;
+			 padding-right:0;
+			 box-sizing: border-box;
+			 margin-bottom: 10px;
+		 }
+
+		 #electoral-votes .party-container {
+			 display: inline-block;
+			 width: 300px;
+			 margin: 0;
+			 min-height: 84px;
+			 font-family: 'Oxygen Mono', monospace;
+		 }
+		 #electoral-votes .party-container:first-child {margin-right:200px;}
+
+		 #electoral-votes .party-container .party {
+			 width: 55%;
+			 border-bottom: 2px solid #3c3c3c;
+			 margin-bottom: 10px;
+			 padding-bottom: 5px;
+			 font-size: 23px;
+			 text-transform: uppercase;
+		 }
+
+		  #electoral-votes .party-container .elec {
+			  font: 13px;
+			  text-transform: uppercase;
+			  letter-spacing: 2px;
+			  transition: text-shadow 1s ease;
+		  }
+
+		  #electoral-votes .party-container .elec.leader[data-party="D"] .value {color:#008fd5;}
+		  #electoral-votes .party-container .elec.leader[data-party="R"] .value {color:#ff2700;}
+		  #electoral-votes .party-container .elec.leader .value {font-weight:700;}
+		  #electoral-votes .party-container .elec .ck {display:none;}
+		  #electoral-votes .party-container .elec.leader .ck {display: inline;}
+
     </style>
   </head>
   <body>
@@ -225,13 +265,35 @@ var map = d3.select("#map").append("svg").attr("width",m.w).attr("height",m.h);
 			.attr("text-anchor","middle").text(function(d){return d.state;});
 
 	var fg = map.append("g").attr("class","fg").selectAll("g").data(tilemap).enter()
-				.append("g").attr("class","state").attr("transform",function(d){
+				.append("g")
+				.attr("class","state")
+				.attr("id",function(d){return "state_"+d.state;})
+				.attr("transform",function(d){
 					z = d.tran.dem;
 					return "translate("+z[0]+","+z[1]+")";
 				}).append("g").attr("class","flipper");
 	fg.append("rect").attr("width",m.tw).attr("height",m.th).attr("x",0).attr("y",0);
 	fg.append("text").attr("x",m.tw/2).attr("y",m.th/2).attr("alignment-baseline","middle")
 				.attr("text-anchor","middle").text(function(d){return d.state;});
+
+
+
+
+
+	var resultsContainer = d3.select("#electoral-votes");
+	var resultDem = resultsContainer.append("div").attr("class","party-container dem");
+	var resultRep = resultsContainer.append("div").attr("class","party-container rep");
+	resultDem.append("div").attr("class","party").text("Democrats");
+	resultDem.append("div").attr("data-party","D").attr("class","elec leader").html("Electoral votes: <span class='value'>332</span><span class='ck'>&nbsp;✔</span>");
+	resultRep.append("div").attr("class","party").text("Republicans");
+	resultRep.append("div").attr("data-party","R").attr("class","elec").html("Electoral votes: <span class='value'>206</span><span class='ck'>&nbsp;✔</span>");
+
+
+
+
+
+
+
 })();
 
 
@@ -357,19 +419,16 @@ var xScale,yScale;
 		.attr("r",8);
 })();
 
-
-
-
-
 /* function that convert republican vote share into hex color code */
 var getColor = (function(){
 	var blue = "#177cb0", grey = "#f0f0f4", red = "#ff461f";
 	var interpolator1 = d3.interpolate(d3.rgb(blue),d3.rgb(grey)),
 		interpolator2 = d3.interpolate(d3.rgb(grey),d3.rgb(red));
+	var amp1 = 1.9, amp2 = 2.2;
 	var z = function(d){
 		var x;
-		if(d<0.5) {x=2*d; return interpolator1(x);}
-		else {x=2*(d-0.5); return interpolator2(x);}
+		if(d<0.5) {x=amp1*d; return interpolator1(x);}
+		else {x=amp2*(d-0.5); return interpolator2(x);}
 	};
 	return z;
 })();
@@ -378,32 +437,52 @@ var getColor = (function(){
 var initialization = 0;
 
 
-
-
-
 /* read demographic data and bind to each tile/state */
 (function(){
 	d3.csv("lib/demo.csv",function(error,data){
 		if(error) throw error;
+		var tot;
+		var k=[5,3,1,2,2],c=[];
 
 		for(var i in tilemap) {
 			d = data.filter(function(e){return e.state == tilemap[i].state;})[0];
-			tilemap[i].demo["CEW"] = d["CEW"];
-			tilemap[i].demo["NCEW"] = d["NCEW"];
-			tilemap[i].demo["Black"] = d["Black"];
-			tilemap[i].demo["Latino"] = d["Latino"];
-			tilemap[i].demo["A/O"] = d["A/O"];
-			tilemap[i].electoral_votes = d.electoral_votes;
-			var dem = d.votes_dem, rep = d.votes_rep;
-			if(dem>rep) {
-				tilemap[i].init.party = "dem";
-				tilemap[i].init.votes = rep;
-			} else {
-				tilemap[i].init.party = "rep";
-				tilemap[i].init.votes = rep;
-			}
+			tilemap[i].demo["CEW"] = parseFloat(d["CEW"]);
+			tilemap[i].demo["NCEW"] = parseFloat(d["NCEW"]);
+			tilemap[i].demo["Black"] = parseFloat(d["Black"]);
+			tilemap[i].demo["Latino"] = parseFloat(d["Latino"]);
+			tilemap[i].demo["A/O"] = parseFloat(d["A/O"]);
+			tilemap[i].electoral_votes = parseInt(d.electoral_votes);
+
+			d.votes_dem = parseFloat(d.votes_dem);
+			d.votes_rep = parseFloat(d.votes_rep);
+
+			if(d.votes_dem>d.votes_rep) {tilemap[i].init.party = "dem";}
+			else {tilemap[i].init.party = "rep";}
+
+			tot = d.votes_rep+d.votes_dem;
+			tilemap[i].init.votes_rep = d.votes_rep/tot;
+			tilemap[i].init.votes_dem = d.votes_dem/tot;
+			tilemap[i].init.votes_rep = Math.round(1000*tilemap[i].init.votes_rep)/1000;
+			tilemap[i].init.votes_dem = Math.round(1000*tilemap[i].init.votes_dem)/1000;
+
+			tilemap[i].init.votes = tilemap[i].init.votes_rep;
+
 			tilemap[i].sim.party = tilemap[i].init.party;
 			tilemap[i].sim.votes = tilemap[i].init.votes;
+
+			c[0]=0;c[1]=0;c[2]=0;
+			for (var j in groups) {
+				var group = groups[j];
+				var groupId = group.cat;
+				var demo = tilemap[i].demo[groupId];
+				c[0] += demo * group.init.turnout * group.init.votes;
+				c[1] += demo * group.init.turnout * k[j];
+				c[2] += demo * group.init.turnout;
+			}
+
+			adj = (tilemap[i].init.votes_rep*c[2]-c[0])/c[1];
+			adj = Math.round(10000*adj)/10000;
+			tilemap[i].init.adj = k.map(function(d){return d*adj;});
 	 	}
 
 		d3.selectAll(".fg .state").attr("transform",function(d){
@@ -438,12 +517,23 @@ var initialization = 0;
 
 
 	function dragmove(d) {
-
 		var x = d3.event.x, y = d3.event.y;
-		if(x > xScale.range()[1]) {x=xScale.range()[1];}
-		if(x < xScale.range()[0]) {x=xScale.range()[0];}
-		if(y > yScale.range()[0]) {y=yScale.range()[0];}
-		if(y < yScale.range()[1]) {y=yScale.range()[1];}
+		var xPad = 0, yPad = yScale.range()[0]*0.1;
+
+		if(d.cat=="CEW") {xPad = 0.3;}
+		if(d.cat=="NCEW") {xPad = 0.2;}
+		if(d.cat=="Black") {xPad = 0.05;}
+		if(d.cat=="Latino") {xPad = 0.1;}
+		if(d.cat=="A/O") {xPad = 0.1;}
+
+		xPad = xPad * xScale.range()[1];
+		xPad = Math.round(100*xPad)/100;
+		yPad = Math.round(100*yPad)/100;
+
+		if(x > xScale.range()[1]-xPad) {x=xScale.range()[1]-xPad;}
+		if(x < xScale.range()[0]+xPad) {x=xScale.range()[0]+xPad;}
+		if(y > yScale.range()[0]-yPad) {y=yScale.range()[0]-yPad;}
+		if(y < yScale.range()[1]+yPad) {y=yScale.range()[1]+yPad;}
 
 		var turnout = Math.round(yScale.invert(y)*100);
 		var votes = Math.round(xScale.invert(x)*100);
@@ -473,9 +563,6 @@ var initialization = 0;
 
 
 	function resetControl() {
-
-
-
 
 		d3.selectAll(".guide").each(function(d){
 			var turnout = d.init.turnout,
@@ -516,20 +603,31 @@ var initialization = 0;
 			return getColor(d.init.votes);
 		});
 
+
+
+
+
+			var resultContainer = d3.select("#electoral-votes");
+			var resultDem = resultContainer.select(".party-container.dem").select(".elec");
+			var resultRep = resultContainer.select(".party-container.rep").select(".elec");
+			resultDem.select(".value").text(332);
+			resultRep.select(".value").text(206);
+			resultDem.classed("leader",true);
+			resultRep.classed("leader",false);
+
+
+
+
+
+
+
+
+
+
+
 	};
 
-
-
-
-
-
-
-
-
-
 	d3.select("#reset-control").on("click",resetControl);
-
-
 
 
 
@@ -538,55 +636,84 @@ var initialization = 0;
 	function drawMap(option) {
 		/* if option is true, show animation */
 		if(initialization==0) return;
-		var state,group,dem,rep;
+		var state,group,dem,rep,tot,voteAdj;
 
 		for (var i in tilemap) {
 			state = tilemap[i];
-			dem=0;rep=0;
+			dem=0;rep=0;tot=0;
 			for (var j in groups) {
 				group = groups[j];
-				rep += state.demo[group.cat] * group.sim.turnout * group.sim.votes;
-				dem += state.demo[group.cat] * group.sim.turnout * (1-group.sim.votes);
+				voteAdj = group.sim.votes+state.init.adj[j];//adjusted vote rate
+				if(voteAdj<0) {voteAdj=0;}
+				if(voteAdj>1) {voteAdj=1;}
+				rep += state.demo[group.cat] * group.sim.turnout * voteAdj;
+				tot += state.demo[group.cat] * group.sim.turnout;
 			}
-			state.sim.votes = Math.round(rep/(rep+dem)*1000)/1000;
+			rep = rep/tot;
+			state.sim.votes = Math.round(1000*rep)/1000;
 		}
 
+		var states = d3.select(".fg").selectAll(".state");
 
-		var states = d3.selectAll(".fg .state").filter(function(d){
-			return (d.sim.party=="dem"&&d.sim.votes>=0.5)||(d.sim.party=="rep"&&d.sim.votes<0.5);
+		states.selectAll("rect").style("fill",function(d){return getColor(d.sim.votes);});
+		states.each(function(d){
+			if(d.sim.votes>=0.5) {
+				d.sim.party = "rep";
+			}else {
+				d.sim.party = "dem";
+			}
 		});
 
-
-		var flippers = states.select(".flipper");
-		var rects = flippers.select("rect");
-
-
-		rects.style("fill",function(d){
-			return getColor(d.sim.votes);
-		});
-
-
-
-		states.transition().attr("transform",function(d){
+		states.transition().duration(500).ease("sin").attr("transform",function(d){
 			var tran;
-			if(d.sim.votes>=0.5) {tran = d.tran["rep"];}
-			else {tran = d.tran["dem"];}
+			if(d.sim.votes>=0.5) {tran=d.tran["rep"];}
+			else {tran=d.tran["dem"];}
 			return "translate("+tran[0]+","+tran[1]+")";
-		}).each("end",function(d){
-			if(d.sim.votes>=0.5) {d.sim.party="rep";}
-			else {d.sim.party="dem";}
 		});
 
 
+		var rep_votes = tilemap.map(function(d){
+			if(d.sim.party=="rep" && d.sim.votes >= 0.5) {
+				return d.electoral_votes;
+			} else if (d.sim.party=="dem" && d.sim.votes<0.5) {
+				return 0;
+			} else {
+				console.log("something with simulation result of state '"+d.state);
+			}
+		});
+
+		var dem_votes = tilemap.map(function(d){
+			if(d.sim.party=="rep"&&d.sim.votes>=0.5) {
+				return 0;
+			} else if (d.sim.party=="dem"&&d.sim.votes<0.5) {
+				return d.electoral_votes;
+			} else {
+				console.log("something with simulation result of state '"+d.state);
+			}
+		});
+
+		rep_votes = rep_votes.reduce(function(a,b){return a+b;},0);
+		dem_votes = dem_votes.reduce(function(a,b){return a+b;},0);
 
 
 
+			var resultContainer = d3.select("#electoral-votes");
+			var resultDem = resultContainer.select(".party-container.dem").select(".elec");
+			var resultRep = resultContainer.select(".party-container.rep").select(".elec");
 
+			resultDem.select(".value").text(dem_votes);
+			resultRep.select(".value").text(rep_votes);
 
+			if(rep_votes>dem_votes){
+				resultDem.classed("leader",false);
+				resultRep.classed("leader",true);
+			} else {
+				resultDem.classed("leader",true);
+				resultRep.classed("leader",false);
+			}
 
 
 	}
-
 
 
 
