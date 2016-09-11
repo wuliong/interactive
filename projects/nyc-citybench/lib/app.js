@@ -44,11 +44,8 @@ var map = new google.maps.Map(d3.select("#map").node(), {
 });
 
 map.addListener('zoom_changed', function(){
-		console.log(this.getZoom());
 	if(this.getZoom()<11) {this.setZoom(11);}
-
 });
-
 
 
 var input = document.getElementById('pac-input');
@@ -73,8 +70,7 @@ d3.json("lib/2015_citybench/CityBench_WGS84.json", function(error,data){
 				.enter().append("svg").attr("class","marker").each(transform);
 			marker.append("circle")
 				.attr("r",3).attr("cx",padding).attr("cy",padding)
-				//.on("click",showBenchInfo)
-				;
+				.on("click",showBenchInfo);
 
 
 			function transform(d,i) {
@@ -88,6 +84,34 @@ d3.json("lib/2015_citybench/CityBench_WGS84.json", function(error,data){
 	} // end overlay.onAdd
 
 	overlay.setMap(map);
+
+
+
+
+
+
+
+
+	var infowindow = new google.maps.InfoWindow({
+		content: "",
+		maxWidth: 300,
+		pixelOffset: new google.maps.Size(0,-4),
+	});
+
+	function showBenchInfo(d) {
+		var c = d.geometry.coordinates;
+		c = new google.maps.LatLng(c[1],c[0]);
+		var contentStr = "Address: "+d.properties.Address;
+
+		var dateInstalled = new Date(d.properties.Installati);
+		var dateFormat = d3.time.format("%Y-%m-%d");
+		contentStr += "<br>Installed on: "+dateFormat(dateInstalled);
+
+		infowindow.setPosition(c);
+		infowindow.setContent(contentStr);
+ 		infowindow.open(map);
+	}
+
 
 
 
