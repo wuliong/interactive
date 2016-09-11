@@ -44,8 +44,11 @@ var map = new google.maps.Map(d3.select("#map").node(), {
 });
 
 map.addListener('zoom_changed', function(){
+		console.log(this.getZoom());
 	if(this.getZoom()<11) {this.setZoom(11);}
+
 });
+
 
 
 var input = document.getElementById('pac-input');
@@ -55,7 +58,6 @@ map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 map.addListener('bounds_changed', function(){
 	searchBox.setBounds(map.getBounds());
 });
-
 
 d3.json("lib/2015_CityBench/CityBench_WGS84.json", function(error,data){
 	if(error) throw error;
@@ -99,6 +101,7 @@ d3.json("lib/2015_CityBench/CityBench_WGS84.json", function(error,data){
 			return;
 		}
 
+		searchResults.selectAll("li").remove();
 		markers.forEach(function(marker){
 			marker.setMap(null);
 		});
@@ -127,17 +130,16 @@ d3.json("lib/2015_CityBench/CityBench_WGS84.json", function(error,data){
 				position: place.geometry.location
 			}));
 
-/*
 			if(place.geometry.viewport) {
 				bounds.union(place.geometry.viewport);
 			} else {
 				bounds.extend(place.geomtry.location);
 			}
-*/
 
 		}); // end places.forEach
 
-// 		map.fitBounds(bounds);
+		map.fitBounds(bounds);
+		if(map.getZoom()>15) {map.setZoom(15);}
 
 
 		searchResults.selectAll("li").remove();
@@ -149,7 +151,8 @@ d3.json("lib/2015_CityBench/CityBench_WGS84.json", function(error,data){
 			var re=/^(.+)\s\d{5},\sUSA$/
 			var found = x.match(re);
 			return found[1]+"<button class='clear-result'>clear</button>";
-		}).select(".clear-result").on("click",function(d){
+		}).select(".clear-result").on("click",function(d,i){
+			markers[i].setMap(null);
 			d3.select(this.parentNode).remove();
 			if(searchResults.selectAll("li.place").empty()) {
 				d3.select(searchResults.node().parentNode).classed("show",false);

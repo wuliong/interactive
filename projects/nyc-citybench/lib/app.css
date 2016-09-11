@@ -11,7 +11,7 @@
 }
 
 .benches circle {
-	fill: #ff461f;
+	fill: #fff143; //#ff461f;
 	stroke: #392f41;
 	stroke-width: 1.5px;
 }
@@ -67,12 +67,33 @@
 }
 
 
-.clear-result {
-	margin: 0 0 0 5px;
+
+
+
+
+
+/* list of search results */
+
+#search-results .place .clear-result {
+	margin: 0 0 0 8px;
+	line-height: inherit;
+	vertical-align: top;
+}
+#search-results .place {
+	display: inline;
+	margin-right: 20px;
+}
+#search-results .place:last-child {
+	margin-right: 0;
+}
+#search-results {
+	display: inline;
+	padding-left: 5px;
 }
 
 #search-container {
 	visibility: hidden;
+	padding:0 0 5px 0;
 }
 
 #search-container.show {
