@@ -59,7 +59,7 @@ map.addListener('bounds_changed', function(){
 	searchBox.setBounds(map.getBounds());
 });
 
-d3.json("lib/2015_CityBench/CityBench_WGS84.json", function(error,data){
+d3.json("lib/2015_citybench/CityBench_WGS84.json", function(error,data){
 	if(error) throw error;
 	data = topojson.feature(data, data.objects.CityBench_WGS84);
 	var overlay = new google.maps.OverlayView();
