@@ -156,14 +156,11 @@ d3.json("lib/2015_citybench/CityBench_WGS84.json", function(error,data){
 			d3.select(this.parentNode).remove();
 			if(searchResults.selectAll("li.place").empty()) {
 				d3.select(searchResults.node().parentNode).classed("show",false);
+				map.setCenter(new google.maps.LatLng(40.73372586752454,-73.93268304443359));
+				map.setZoom(13);
+				input.value="";
 			}
 		});
-
-
-
-
-
-
 
 
 
