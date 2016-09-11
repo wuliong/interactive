@@ -25,7 +25,11 @@ var stylesArray = [
       { "visibility": "simplified" }
     ]
   },{
-  }
+	 "featureType": "poi.business",
+    "stylers": [
+      { "visibility": "off" }
+    ]
+  },
 ];
 
 var map = new google.maps.Map(d3.select("#map").node(), {
@@ -69,9 +73,8 @@ d3.json("lib/2015_citybench/CityBench_WGS84.json", function(error,data){
 			var marker = layer.selectAll("svg").data(data.features).each(transform)
 				.enter().append("svg").attr("class","marker").each(transform);
 			marker.append("circle")
-				.attr("r",3).attr("cx",padding).attr("cy",padding)
+				.attr("r",5).attr("cx",padding).attr("cy",padding)
 				.on("click",showBenchInfo);
-
 
 			function transform(d,i) {
 				var c = d.geometry.coordinates;
@@ -99,6 +102,7 @@ d3.json("lib/2015_citybench/CityBench_WGS84.json", function(error,data){
 	});
 
 	function showBenchInfo(d) {
+		infowindow.close();
 		var c = d.geometry.coordinates;
 		c = new google.maps.LatLng(c[1],c[0]);
 		var contentStr = "Address: "+d.properties.Address;
